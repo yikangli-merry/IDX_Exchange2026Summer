@@ -25,7 +25,7 @@ The second milestone was to understand how OpenClaw routes user requests from a 
 - Drafted a simple tool-handler pattern for routing user messages to typed asynchronous functions.
 - Documented how future MLS-related skills can connect OpenClaw queries to the local MySQL datasets.
 
-## Architecture Flow
+### Architecture Flow
 
 ```mermaid
 flowchart LR
@@ -40,11 +40,11 @@ flowchart LR
   Response --> User
 ```
 
-## Current Status
+### Current Status
 
 The local environment, MLS database import, WhatsApp connection, and first architecture review are complete. The next step is to build real estate focused OpenClaw skills that can query MLS data and return useful property insights through WhatsApp.
 
-## Security Note
+### Security Note
 
 No API keys, passwords, local `.env` files, SQL dumps, or database files are stored in this repository.
 
