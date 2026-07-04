@@ -1,0 +1,19 @@
+{
+  "name": "real-estate-query-parser-skill",
+  "version": "1.0.0",
+  "description": "Week 2 OpenClaw skill for parsing free-text real estate queries into structured rets_property filters.",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "node --test tests/parser.test.mjs",
+    "check": "node --check src/parser.ts && node --check src/index.ts && node --check tests/parser.test.mjs"
+  },
+  "keywords": [
+    "opencLaw",
+    "real-estate",
+    "parser",
+    "rets_property"
+  ],
+  "author": "",
+  "license": "MIT"
+}
