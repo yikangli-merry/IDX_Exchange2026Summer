@@ -47,3 +47,60 @@ The local environment, MLS database import, WhatsApp connection, and first archi
 ## Security Note
 
 No API keys, passwords, local `.env` files, SQL dumps, or database files are stored in this repository.
+
+## Week 2: Natural Language Real Estate Query Parser
+
+### Overview
+
+This week’s work implements a TypeScript OpenClaw skill that converts free-text real estate search queries into structured filter objects for the `rets_property` database layer.
+
+For example:
+
+> Show me 3-bedroom condos in Irvine under $1.5M with a pool.
+
+The parser converts the query into structured fields such as city, maximum price, bedrooms, property type, and property features.
+
+### Goal
+
+The goal is to create a rule-based natural language parser that acts as the front-end for real estate search. Instead of requiring users to manually fill out database filters, the skill extracts search intent from a normal sentence and maps it to `rets_property` columns.
+
+### Supported Filters
+
+| User Intent | Output Field | Database Column | Example |
+|---|---|---|---|
+| City | `city` | `L_City` | `"Irvine"` |
+| Maximum Price | `maxPrice` | `L_SystemPrice` | `1500000` |
+| Minimum Bedrooms | `beds` | `L_Keyword2` | `3` |
+| Minimum Bathrooms | `baths` | `LM_Dec_3` | `2.5` |
+| Minimum Square Feet | `sqft` | `LM_Int2_3` | `1800` |
+| Property Type | `type` | `L_Type_` | `"Condominium"` |
+| Pool | `pool` | `PoolPrivateYN` | `"True"` |
+| View | `hasView` | `ViewYN` | `"True"` |
+| Maximum HOA | `maxHoa` | `AssociationFee` | `500` |
+
+### Features
+
+- Parses prices like `$900k`, `$1.5M`, and `$1,200,000`
+- Detects bedrooms from `3 bed`, `3 beds`, and `3-bedroom`
+- Detects bathrooms from `2 bath`, `2.5 baths`, and `3 bathrooms`
+- Detects square footage from `1800 sqft`, `1800 sq ft`, and `1800 square feet`
+- Maps property types:
+  - `condo` -> `Condominium`
+  - `townhome` -> `Townhouse`
+  - `single family` -> `SingleFamilyResidence`
+  - `land` -> `UnimprovedLand`
+- Detects pool and view requests
+- Extracts HOA limits such as `max HOA 500` and `HOA under 500`
+
+### Project Structure
+
+```text
+skill/
+  src/
+    parser.ts
+    index.ts
+  tests/
+    parser.test.mjs
+  package.json
+  package-lock.json
+  tsconfig.json
