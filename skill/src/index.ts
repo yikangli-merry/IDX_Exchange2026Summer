@@ -1,4 +1,5 @@
 import { FILTER_COLUMN_MAP, parsePropertyQuery, toRetsPropertyFilters, type PropertyFilter } from "./parser.ts";
+import { getSoldComps, searchActiveListings } from "./mlsQueries.ts";
 
 export interface SkillInput {
   query: string;
@@ -22,4 +23,10 @@ export async function run(input: SkillInput): Promise<SkillOutput> {
   };
 }
 
-export { FILTER_COLUMN_MAP, parsePropertyQuery, toRetsPropertyFilters };
+export {
+  FILTER_COLUMN_MAP,
+  getSoldComps,
+  parsePropertyQuery,
+  searchActiveListings,
+  toRetsPropertyFilters
+};

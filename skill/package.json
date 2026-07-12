@@ -5,8 +5,8 @@
   "type": "module",
   "main": "src/index.ts",
   "scripts": {
-    "test": "node --test tests/parser.test.mjs",
-    "check": "node --check src/parser.ts && node --check src/index.ts && node --check tests/parser.test.mjs"
+    "test": "node --test tests/parser.test.mjs tests/mlsQueries.test.mjs",
+    "check": "node --check src/parser.ts && node --check src/db.ts && node --check src/mlsQueries.ts && node --check src/index.ts && node --check tests/parser.test.mjs && node --check tests/mlsQueries.test.mjs"
   },
   "keywords": [
     "opencLaw",
@@ -15,5 +15,8 @@
     "rets_property"
   ],
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "mysql2": "^3.15.3"
+  }
 }
