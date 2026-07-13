@@ -160,3 +160,25 @@ The active listing query targets the `rets_property` table and always filters fo
 
 ```sql
 L_Status = "Active"
+```
+
+### Updated Project Structure
+
+```text
+docs/plan/
+  whatsapp-mls-architecture.md
+skill/
+  src/
+    db.ts
+    index.ts
+    mlsQueries.ts
+    parser.ts
+  tests/
+    mlsQueries.test.mjs
+    parser.test.mjs
+  package.json
+  package-lock.json
+  tsconfig.json
+.env.example
+.gitignore
+```
