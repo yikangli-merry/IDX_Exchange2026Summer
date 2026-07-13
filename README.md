@@ -104,6 +104,7 @@ skill/
   package.json
   package-lock.json
   tsconfig.json
+```
 
 ## Week 3 - MLS MySQL Query Layer Integration
 
