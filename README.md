@@ -182,3 +182,98 @@ skill/
 .env.example
 .gitignore
 ```
+
+## Week 4 - Conversational Property Search Agent
+
+This week focuses on extending the existing single-turn real estate query skill into a multi-turn conversational property search experience for WhatsApp.
+
+The Week 2 parser and Week 3 MLS query layer are preserved. Week 4 adds a lightweight session memory layer and a conversation handler on top of the existing `skill/` package, so users can provide search preferences across multiple messages instead of writing one complete query at once.
+
+### Goal
+
+The goal is to let the agent ask follow-up questions, remember user preferences within a session, refine the active listing search iteratively, and return `rets_property` results in a WhatsApp-friendly format.
+
+Example conversation:
+
+```text
+User: Find homes in Irvine.
+Agent: What is your budget?
+User: Under $1.2M.
+Agent: Any preference: condo, townhome, or single family?
+User: Single family with at least 3 beds.
+Agent: Returns filtered active listing results.
+```
+
+### Key Work Completed
+
+The existing `skill/` project was extended instead of replacing the Week 2 parser or Week 3 MLS query layer.
+
+The following files were added or updated:
+
+- `skill/src/session.ts`
+  - Adds in-memory session storage by user id.
+  - Tracks user preferences such as city, budget, beds, baths, property type, pool preference, previous results, and conversation step.
+  - Provides helpers to get, update, and clear a user session.
+
+- `skill/src/conversation.ts`
+  - Adds the multi-turn conversation handler.
+  - Parses each incoming user message with the existing parser.
+  - Merges newly extracted filters into the current user session.
+  - Asks follow-up questions when required information is missing.
+  - Calls the existing MLS active listing search once enough search criteria are available.
+  - Formats listing results for WhatsApp with address, price, beds/baths, and photo count.
+
+- `skill/src/index.ts`
+  - Keeps the existing Week 2 and Week 3 exports.
+  - Adds exports for the Week 4 conversation and session helpers.
+
+- `skill/tests/conversation.test.mjs`
+  - Adds tests for session memory, multi-turn refinement, reset behavior, user isolation, follow-up questions, and formatted listing responses.
+
+- `skill/package.json`
+  - Updates the test and check scripts to include the new Week 4 conversation files.
+
+### Testing
+
+From the project root, run:
+
+```powershell
+cd skill
+npm.cmd test
+```
+
+Expected result:
+
+- Existing Week 2 parser tests pass.
+- Existing Week 3 MLS query tests pass.
+- New Week 4 conversation/session tests pass.
+
+The unit tests do not require a live MySQL connection. A real database connection is only needed when running live MLS searches through the query functions.
+
+### Updated Project Structure
+
+```text
+skill/
+  src/
+    conversation.ts
+    db.ts
+    index.ts
+    mlsQueries.ts
+    parser.ts
+    session.ts
+  tests/
+    conversation.test.mjs
+    mlsQueries.test.mjs
+    parser.test.mjs
+  package.json
+  package-lock.json
+  tsconfig.json
+```
+
+### Notes
+
+Week 4 does not replace the Week 2 or Week 3 work. It builds on top of it:
+
+- Week 2: parse natural language real estate search queries.
+- Week 3: query MLS data from MySQL tables.
+- Week 4: manage multi-turn user sessions and conversational search refinement.

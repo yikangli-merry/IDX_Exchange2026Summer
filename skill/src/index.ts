@@ -1,5 +1,7 @@
 import { FILTER_COLUMN_MAP, parsePropertyQuery, toRetsPropertyFilters, type PropertyFilter } from "./parser.ts";
 import { getSoldComps, searchActiveListings } from "./mlsQueries.ts";
+import { handlePropertyConversation } from "./conversation.ts";
+import { clearSession, getSession, updateSession } from "./session.ts";
 
 export interface SkillInput {
   query: string;
@@ -24,9 +26,13 @@ export async function run(input: SkillInput): Promise<SkillOutput> {
 }
 
 export {
+  clearSession,
   FILTER_COLUMN_MAP,
+  getSession,
   getSoldComps,
+  handlePropertyConversation,
   parsePropertyQuery,
   searchActiveListings,
-  toRetsPropertyFilters
+  toRetsPropertyFilters,
+  updateSession
 };
