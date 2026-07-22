@@ -280,11 +280,11 @@ Week 4 does not replace the Week 2 or Week 3 work. It builds on top of it:
 
 ## Week 5 - Market Statistics Agent
 
-This week focuses on adding a city-level market statistics agent to the existing OpenClaw real estate skill. The previous weeks supported parsing user search intent, querying active listings, retrieving sold comps, and handling multi-turn property search conversations. Week 5 builds on that foundation by turning the `california_sold` historical sold-comps table into a market analytics engine.
+This week focuses on extending the existing real estate skill from property search into city-level market analysis. The Week 2 parser, Week 3 MLS query layer, and Week 4 conversational search agent are preserved. Week 5 adds a new market statistics layer on top of the existing `skill/` package, so the agent can answer market questions using the `california_sold` historical sold-comps table.
 
 ### Goal
 
-The goal is to let the agent answer market questions with data-backed summaries instead of only returning individual property listings.
+The goal is to let the agent respond to market questions with data-backed summaries for any California city in the sold-comps dataset. Instead of only returning active listings or individual sold comps, the agent can now summarize recent market performance.
 
 Example questions:
 
@@ -292,5 +292,95 @@ Example questions:
 What is the average price per sq ft in Pasadena?
 Is now a good time to buy in San Diego?
 What is the median close price in Irvine?
-Show me the 12-month market trend for Long Beach.
+Show me the 12-month trend for Long Beach.
 ```
+
+The market statistics agent calculates median price, average price, price per square foot, days on market, list-to-close ratio, and monthly trend data from recent residential sold records.
+
+### Key Work Completed
+
+The existing `skill/` project was extended instead of creating a separate Python script or standalone SQL file. This keeps Week 5 aligned with the earlier OpenClaw skill implementation.
+
+The following files were added or updated:
+
+- `skill/src/marketStats.ts`
+  - Adds the Week 5 market statistics layer.
+  - Builds safe parameterized MySQL queries for the `california_sold` table.
+  - Filters sold records by city, residential property type, and recent close date.
+  - Uses a default 12-month analysis window.
+  - Formats raw sold-comps rows into clean agent-friendly objects.
+  - Calculates sold count, median close price, average close price, median price per square foot, average price per square foot, average days on market, median days on market, and list-to-close ratio.
+  - Groups sold records by month to calculate monthly sales volume, average price, median price, average DOM, average price per square foot, and month-over-month price change.
+  - Adds `handleMarketQuestion()` for turning a user market question into a WhatsApp-friendly reply.
+  - Adds `getCityMarketSummary()` for running the live MySQL-backed market summary.
+  - Adds `buildCityMarketRowsQuery()` for testable SQL construction.
+
+- `skill/src/index.ts`
+  - Keeps the existing Week 2 parser exports.
+  - Keeps the existing Week 3 MLS query exports.
+  - Keeps the existing Week 4 conversation and session exports.
+  - Adds exports for the Week 5 market statistics functions.
+
+- `skill/tests/marketStats.test.mjs`
+  - Adds unit tests for market statistics behavior.
+  - Tests SQL construction and confirms user input is passed through query parameters.
+  - Tests defensive handling for missing city values and invalid month windows.
+  - Tests city extraction from natural-language market questions.
+  - Tests raw row formatting from database-style fields into agent-friendly fields.
+  - Tests median price, average price, DOM, price per square foot, list-to-close ratio, and monthly trend calculations.
+  - Tests empty-result replies when no sold records are found.
+  - Tests `handleMarketQuestion()` with a mocked market summary function, so the tests do not require a live MySQL database.
+
+- `skill/package.json`
+  - Updates the existing `test` script to include `marketStats.test.mjs`.
+  - Updates the existing `check` script to include `marketStats.ts` and the new test file.
+
+### Testing
+
+From the project root, run:
+
+```powershell
+cd skill
+npm.cmd test
+npm.cmd run check
+```
+
+Expected result:
+
+- Existing Week 2 parser tests pass.
+- Existing Week 3 MLS query tests pass.
+- Existing Week 4 conversation/session tests pass.
+- New Week 5 market statistics tests pass.
+
+The unit tests do not require a live MySQL connection. A real database connection is only needed when running the market statistics agent against local MLS data.
+
+### Updated Project Structure
+
+```text
+skill/
+  src/
+    conversation.ts
+    db.ts
+    index.ts
+    marketStats.ts
+    mlsQueries.ts
+    parser.ts
+    session.ts
+  tests/
+    conversation.test.mjs
+    marketStats.test.mjs
+    mlsQueries.test.mjs
+    parser.test.mjs
+  package.json
+  package-lock.json
+  tsconfig.json
+```
+
+### Notes
+
+Week 5 builds on top of Week 2-4:
+
+- Week 2: parse natural language real estate search queries.
+- Week 3: query MLS data from `rets_property` and `california_sold`.
+- Week 4: manage multi-turn property search conversations.
+- Week 5: answer city-level market statistics and trend questions from `california_sold`.
