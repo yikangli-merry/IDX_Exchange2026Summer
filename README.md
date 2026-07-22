@@ -277,3 +277,20 @@ Week 4 does not replace the Week 2 or Week 3 work. It builds on top of it:
 - Week 2: parse natural language real estate search queries.
 - Week 3: query MLS data from MySQL tables.
 - Week 4: manage multi-turn user sessions and conversational search refinement.
+
+## Week 5 - Market Statistics Agent
+
+This week focuses on adding a city-level market statistics agent to the existing OpenClaw real estate skill. The previous weeks supported parsing user search intent, querying active listings, retrieving sold comps, and handling multi-turn property search conversations. Week 5 builds on that foundation by turning the `california_sold` historical sold-comps table into a market analytics engine.
+
+### Goal
+
+The goal is to let the agent answer market questions with data-backed summaries instead of only returning individual property listings.
+
+Example questions:
+
+```text
+What is the average price per sq ft in Pasadena?
+Is now a good time to buy in San Diego?
+What is the median close price in Irvine?
+Show me the 12-month market trend for Long Beach.
+```
