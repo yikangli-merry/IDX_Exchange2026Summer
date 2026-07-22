@@ -5,8 +5,8 @@
   "type": "module",
   "main": "src/index.ts",
   "scripts": {
-    "test": "node --test tests/parser.test.mjs tests/mlsQueries.test.mjs tests/conversation.test.mjs",
-    "check": "node --check src/parser.ts && node --check src/db.ts && node --check src/mlsQueries.ts && node --check src/session.ts && node --check src/conversation.ts && node --check src/index.ts && node --check tests/parser.test.mjs && node --check tests/mlsQueries.test.mjs && node --check tests/conversation.test.mjs"
+    "test": "node --test tests/parser.test.mjs tests/mlsQueries.test.mjs tests/conversation.test.mjs tests/marketStats.test.mjs",
+    "check": "node --check src/parser.ts && node --check src/db.ts && node --check src/mlsQueries.ts && node --check src/session.ts && node --check src/conversation.ts && node --check src/marketStats.ts && node --check src/index.ts && node --check tests/parser.test.mjs && node --check tests/mlsQueries.test.mjs && node --check tests/conversation.test.mjs && node --check tests/marketStats.test.mjs"
   },
   "keywords": [
     "opencLaw",

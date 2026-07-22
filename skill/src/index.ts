@@ -1,5 +1,6 @@
 import { FILTER_COLUMN_MAP, parsePropertyQuery, toRetsPropertyFilters, type PropertyFilter } from "./parser.ts";
 import { getSoldComps, searchActiveListings } from "./mlsQueries.ts";
+import { buildCityMarketRowsQuery, getCityMarketSummary, handleMarketQuestion } from "./marketStats.ts";
 import { handlePropertyConversation } from "./conversation.ts";
 import { clearSession, getSession, updateSession } from "./session.ts";
 
@@ -28,8 +29,11 @@ export async function run(input: SkillInput): Promise<SkillOutput> {
 export {
   clearSession,
   FILTER_COLUMN_MAP,
+  buildCityMarketRowsQuery,
+  getCityMarketSummary,
   getSession,
   getSoldComps,
+  handleMarketQuestion,
   handlePropertyConversation,
   parsePropertyQuery,
   searchActiveListings,
