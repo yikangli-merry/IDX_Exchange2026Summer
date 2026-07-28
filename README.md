@@ -384,3 +384,82 @@ Week 5 builds on top of Week 2-4:
 - Week 3: query MLS data from `rets_property` and `california_sold`.
 - Week 4: manage multi-turn property search conversations.
 - Week 5: answer city-level market statistics and trend questions from `california_sold`.
+
+## Week 6 - Embeddings & Vector Search
+
+This week adds semantic property search on top of the existing `rets_property` active listing dataset. Instead of relying only on structured SQL filters or exact keyword matches, the skill uses OpenAI embeddings to compare a buyer's free-text description against active listing descriptions.
+
+### Goal
+
+The goal is to support queries such as:
+
+> charming craftsman with mountain views and character
+
+The semantic search layer converts both the user query and listing descriptions into embedding vectors, then ranks active listings by cosine similarity. This helps the agent find relevant properties even when the listing does not share the exact same keywords as the user query.
+
+### Key Work Completed
+
+The existing `skill/` package was extended without replacing the Week 2 through Week 5 work.
+
+- Added `skill/src/semanticSearch.ts`
+  - Builds embedding text from active listing fields such as property type, city, beds, baths, square feet, year built, price, and `L_Remarks`.
+  - Calls the OpenAI embeddings API using `text-embedding-3-small` by default.
+  - Creates SQL helpers for a `rets_property_embeddings` cache table.
+  - Generates and refreshes listing embeddings when listing text changes.
+  - Computes cosine similarity between query and listing embeddings.
+  - Provides `findSimilarListings(query, topK = 5)` for returning the top 5 semantically similar active listings.
+
+- Updated `skill/src/index.ts`
+  - Exports the semantic search functions and related types.
+
+- Updated `.env.example`
+  - Adds `OPENAI_API_KEY`.
+  - Adds `OPENAI_EMBEDDING_MODEL=text-embedding-3-small`.
+
+- Updated `skill/package.json`
+  - Adds the official `openai` package.
+  - Adds semantic search tests to the existing test and check scripts.
+
+### Semantic Search Flow
+
+1. Read active listings from `rets_property` where `L_Status = "Active"`.
+2. Build a clean text description for each listing.
+3. Generate an OpenAI embedding for each listing description.
+4. Store listing embeddings in `rets_property_embeddings`.
+5. Generate one embedding for the user's search query.
+6. Compare the query embedding to cached listing embeddings with cosine similarity.
+7. Return the top 5 active listings with similarity scores.
+
+### Testing
+
+Run:
+
+```powershell
+cd skill
+npm.cmd test
+npm.cmd run check
+```
+
+### Updated Project Structure
+
+```text
+skill/
+  src/
+    conversation.ts
+    db.ts
+    index.ts
+    marketStats.ts
+    mlsQueries.ts
+    parser.ts
+    semanticSearch.ts
+    session.ts
+  tests/
+    conversation.test.mjs
+    marketStats.test.mjs
+    mlsQueries.test.mjs
+    parser.test.mjs
+    semanticSearch.test.mjs
+  package.json
+  package-lock.json
+  tsconfig.json
+```
