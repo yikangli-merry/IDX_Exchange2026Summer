@@ -3,6 +3,17 @@ import { getSoldComps, searchActiveListings } from "./mlsQueries.ts";
 import { buildCityMarketRowsQuery, getCityMarketSummary, handleMarketQuestion } from "./marketStats.ts";
 import { handlePropertyConversation } from "./conversation.ts";
 import { clearSession, getSession, updateSession } from "./session.ts";
+import {
+  buildActiveListingEmbeddingSourceQuery,
+  buildCreateListingEmbeddingsTableQuery,
+  buildListingEmbeddingText,
+  buildSemanticListingCacheQuery,
+  cosineSimilarity,
+  ensureListingEmbeddingCacheTable,
+  findSimilarListings,
+  generateListingEmbeddings,
+  getEmbedding
+} from "./semanticSearch.ts";
 
 export interface SkillInput {
   query: string;
@@ -29,8 +40,17 @@ export async function run(input: SkillInput): Promise<SkillOutput> {
 export {
   clearSession,
   FILTER_COLUMN_MAP,
+  buildActiveListingEmbeddingSourceQuery,
   buildCityMarketRowsQuery,
+  buildCreateListingEmbeddingsTableQuery,
+  buildListingEmbeddingText,
+  buildSemanticListingCacheQuery,
+  cosineSimilarity,
+  ensureListingEmbeddingCacheTable,
+  findSimilarListings,
+  generateListingEmbeddings,
   getCityMarketSummary,
+  getEmbedding,
   getSession,
   getSoldComps,
   handleMarketQuestion,
@@ -40,3 +60,12 @@ export {
   toRetsPropertyFilters,
   updateSession
 };
+
+export type {
+  EmbeddingProvider,
+  FindSimilarListingsOptions,
+  GenerateListingEmbeddingsOptions,
+  ListingEmbeddingGenerationSummary,
+  ListingEmbeddingRecord,
+  SemanticListingResult
+} from "./semanticSearch.ts";
