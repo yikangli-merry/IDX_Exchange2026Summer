@@ -463,3 +463,72 @@ skill/
   package-lock.json
   tsconfig.json
 ```
+
+## Week 7 - Recommendation Engine
+
+This week focuses on building a hybrid recommendation engine for active MLS listings. The Week 3 MLS query layer, Week 5 sold-comps analysis, and Week 6 semantic search work are preserved. Week 7 adds a recommendation layer on top of the existing `skill/` package, so the agent can suggest comparable active listings when a user likes a specific property.
+
+### Goal
+
+The goal is to recommend the top 5 similar active listings from `rets_property` for a given liked listing, using both structured property similarity and embedding-based semantic similarity.
+
+Each recommendation is also validated against recent sold comparable data from `california_sold`, so the agent can explain whether the active list price is supported by recent market comps.
+
+### Key Work Completed
+
+The existing `skill/` project was extended instead of creating a separate recommendation service.
+
+The following files were added or updated:
+
+- `skill/src/recommendationEngine.ts`
+  - Adds the Week 7 recommendation engine.
+  - Implements hybrid similarity scoring.
+  - Scores structured similarity using price, bedroom count, city, and square footage.
+  - Scores semantic similarity using cached listing embeddings and cosine similarity.
+  - Ranks comparable active listings and returns the top recommendations.
+  - Adds comp validation against recent `california_sold` records.
+  - Formats recommendation results into WhatsApp-friendly replies.
+
+- `skill/src/index.ts`
+  - Keeps the existing Week 2 through Week 6 exports.
+  - Adds exports for the Week 7 recommendation functions and types.
+
+- `skill/tests/recommendationEngine.test.mjs`
+  - Adds unit tests for recommendation scoring, ranking, SQL construction, comp validation, and reply formatting.
+  - Uses mock rows and mock embeddings so tests do not require a live MySQL database or OpenAI API key.
+
+- `skill/package.json`
+  - Updates the test and check scripts to include the new recommendation engine files.
+
+### Hybrid Recommendation Score
+
+The recommendation engine uses a 100-point scoring model:
+
+- 60 points from structured similarity:
+  - price range
+  - bedroom count
+  - city
+  - square footage
+- 40 points from semantic similarity:
+  - cosine similarity between cached listing embeddings
+
+### Comp Validation
+
+For each recommended listing, the skill checks recent residential sold comps from `california_sold` in the same city and within a similar living-area range.
+
+The validation returns:
+
+- comp-supported price
+- active list price
+- comp count
+- percentage difference between list price and comp-supported price
+
+### Testing
+
+From the project root, run:
+
+```powershell
+cd skill
+npm.cmd test
+npm.cmd run check
+```
