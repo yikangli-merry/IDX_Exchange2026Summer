@@ -4,6 +4,14 @@ import { buildCityMarketRowsQuery, getCityMarketSummary, handleMarketQuestion } 
 import { handlePropertyConversation } from "./conversation.ts";
 import { clearSession, getSession, updateSession } from "./session.ts";
 import {
+  buildCompValidationQuery,
+  buildRecommendationRowsQuery,
+  calculateHybridSimilarityScore,
+  formatRecommendationReply,
+  recommendSimilarListingsForListing,
+  validateListingWithComps
+} from "./recommendationEngine.ts";
+import {
   buildActiveListingEmbeddingSourceQuery,
   buildCreateListingEmbeddingsTableQuery,
   buildListingEmbeddingText,
@@ -42,12 +50,16 @@ export {
   FILTER_COLUMN_MAP,
   buildActiveListingEmbeddingSourceQuery,
   buildCityMarketRowsQuery,
+  buildCompValidationQuery,
   buildCreateListingEmbeddingsTableQuery,
   buildListingEmbeddingText,
+  buildRecommendationRowsQuery,
   buildSemanticListingCacheQuery,
+  calculateHybridSimilarityScore,
   cosineSimilarity,
   ensureListingEmbeddingCacheTable,
   findSimilarListings,
+  formatRecommendationReply,
   generateListingEmbeddings,
   getCityMarketSummary,
   getEmbedding,
@@ -56,9 +68,11 @@ export {
   handleMarketQuestion,
   handlePropertyConversation,
   parsePropertyQuery,
+  recommendSimilarListingsForListing,
   searchActiveListings,
   toRetsPropertyFilters,
-  updateSession
+  updateSession,
+  validateListingWithComps
 };
 
 export type {
@@ -69,3 +83,11 @@ export type {
   ListingEmbeddingRecord,
   SemanticListingResult
 } from "./semanticSearch.ts";
+
+export type {
+  CompValidation,
+  HybridSimilarityScore,
+  ListingRecommendation,
+  RecommendSimilarListingsOptions,
+  ValidateListingWithCompsOptions
+} from "./recommendationEngine.ts";
