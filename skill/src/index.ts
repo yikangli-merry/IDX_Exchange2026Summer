@@ -22,6 +22,18 @@ import {
   generateListingEmbeddings,
   getEmbedding
 } from "./semanticSearch.ts";
+import {
+  answerRagQuestion,
+  buildGroundedAnswerPrompt,
+  buildRagContext,
+  chunkText,
+  citationsFromChunks,
+  createRagChunks,
+  generateGroundedAnswer,
+  indexRagDocuments,
+  normalizeRagTopK,
+  retrieveRagChunks
+} from "./ragAssistant.ts";
 
 export interface SkillInput {
   query: string;
@@ -52,23 +64,33 @@ export {
   buildCityMarketRowsQuery,
   buildCompValidationQuery,
   buildCreateListingEmbeddingsTableQuery,
+  buildGroundedAnswerPrompt,
   buildListingEmbeddingText,
+  buildRagContext,
   buildRecommendationRowsQuery,
   buildSemanticListingCacheQuery,
   calculateHybridSimilarityScore,
+  chunkText,
+  citationsFromChunks,
   cosineSimilarity,
+  createRagChunks,
   ensureListingEmbeddingCacheTable,
   findSimilarListings,
   formatRecommendationReply,
   generateListingEmbeddings,
+  generateGroundedAnswer,
   getCityMarketSummary,
   getEmbedding,
   getSession,
   getSoldComps,
   handleMarketQuestion,
   handlePropertyConversation,
+  answerRagQuestion,
+  indexRagDocuments,
+  normalizeRagTopK,
   parsePropertyQuery,
   recommendSimilarListingsForListing,
+  retrieveRagChunks,
   searchActiveListings,
   toRetsPropertyFilters,
   updateSession,
@@ -83,6 +105,20 @@ export type {
   ListingEmbeddingRecord,
   SemanticListingResult
 } from "./semanticSearch.ts";
+
+export type {
+  IndexedRagChunk,
+  KnowledgeDocument,
+  RagAnswerGenerator,
+  RagAnswerGeneratorInput,
+  RagAnswerOptions,
+  RagAnswerOutput,
+  RagChunk,
+  RagCitation,
+  RagIndexOptions,
+  RagRetrievalResult,
+  RagRetrieveOptions
+} from "./ragAssistant.ts";
 
 export type {
   CompValidation,
