@@ -532,3 +532,45 @@ cd skill
 npm.cmd test
 npm.cmd run check
 ```
+
+## Week 8 - Retrieval-Augmented Generation (RAG)
+
+This week adds a document-aware RAG assistant to the existing IDX Exchange TypeScript skill. The assistant answers real estate terminology, MLS field, and market concept questions using indexed source documents instead of relying on model memory.
+
+### Goal
+
+Build a grounded RAG assistant that can answer questions such as:
+
+- What does DOM mean?
+- What columns are in california_sold?
+- What is a list-to-close ratio?
+
+### Knowledge Sources
+
+- MLS column mappings for `rets_property` and `california_sold`
+- Real estate terminology glossary
+- California real estate disclosure and law summary
+- Existing Week 2-7 skill code and project documentation
+
+### Implementation
+
+Week 8 adds `skill/src/ragAssistant.ts`, which supports:
+
+- Document chunking
+- In-memory RAG indexing
+- Embedding-based retrieval
+- Cosine similarity ranking
+- Grounded answer generation
+- Source citations
+- No-context fallback when indexed documents do not support an answer
+
+The implementation reuses the Week 6 embedding and cosine similarity utilities from `semanticSearch.ts`.
+
+### Testing
+
+Run from `skill/`:
+
+npm.cmd test
+npm.cmd run check
+
+The RAG tests cover chunking, indexing, retrieval, citations, grounded answer generation, and no-context behavior.
