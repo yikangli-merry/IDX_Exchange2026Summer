@@ -547,10 +547,13 @@ Build a grounded RAG assistant that can answer questions such as:
 
 ### Knowledge Sources
 
-- MLS column mappings for `rets_property` and `california_sold`
-- Real estate terminology glossary
-- California real estate disclosure and law summary
-- Existing Week 2-7 skill code and project documentation
+The updated Week 8 deliverable indexes three main source categories:
+
+- Real Estate Data Analyst Primer terminology, represented by `docs/reference/real-estate-glossary.md`
+- Trestle/RESO-style MLS metadata and field definitions, represented by `docs/reference/mls-column-mapping.md`
+- Week 5 market analytics summaries, represented by `docs/reference/week5-market-summaries.md`
+
+For completeness, the handbook schema reference on pages 4-5 can also be used as an optional fourth source for IDX legacy `rets_property` fields that do not map directly to Trestle/RESO field names.
 
 ### Implementation
 
@@ -573,4 +576,4 @@ Run from `skill/`:
 npm.cmd test
 npm.cmd run check
 
-The RAG tests cover chunking, indexing, retrieval, citations, grounded answer generation, and no-context behavior.
+The RAG tests cover chunking, indexing, retrieval, citations, grounded answer generation, no-context behavior, and the updated Week 8 source set including Week 5 market summaries.
