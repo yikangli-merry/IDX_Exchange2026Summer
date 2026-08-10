@@ -1,10 +1,12 @@
 # MLS Column Mapping Reference
 
-This reference supports the Week 8 RAG assistant. It summarizes the MLS fields already used by the Week 2 through Week 7 skill code.
+This reference supports the Week 8 RAG assistant. It summarizes the MLS fields already used by the Week 2 through Week 7 skill code and aligns the project schema with the updated Week 8 source guidance.
 
 ## `rets_property` Active Listings
 
 `rets_property` stores active listing records used by search, conversations, semantic search, and recommendations.
+
+This table is a mixed schema. Several fields, such as `YearBuilt`, `AssociationFee`, `PoolPrivateYN`, `ViewYN`, `FireplaceYN`, and status-style fields, match common Trestle/RESO naming. The core search fields used in this project, including `L_SystemPrice`, `L_Keyword2`, `LM_Dec_3`, `LM_Int2_3`, `L_City`, and `L_Address`, are IDX legacy-style names and should be indexed through the project schema reference when the RAG assistant needs reliable answers about active listing fields.
 
 | Column | Agent field | Meaning |
 |---|---|---|
@@ -35,6 +37,8 @@ This reference supports the Week 8 RAG assistant. It summarizes the MLS fields a
 ## `california_sold` Sold Comparables
 
 `california_sold` stores historical sold residential records used by sold comps, market statistics, trend analysis, and recommendation validation.
+
+The `california_sold` columns map almost entirely to Trestle/RESO-standard field names, so this table is covered by the Trestle metadata documentation source for Week 8.
 
 | Column | Agent field | Meaning |
 |---|---|---|

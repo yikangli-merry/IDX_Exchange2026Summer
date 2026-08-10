@@ -14,16 +14,19 @@ import {
 
 function vectorForText(text) {
   const lower = text.toLowerCase();
+  if (lower.includes("market summaries") || lower.includes("median close price") || lower.includes("monthly trend")) {
+    return [0, 0, 0, 1];
+  }
   if (lower.includes("dom") || lower.includes("days on market")) {
-    return [1, 0, 0];
+    return [1, 0, 0, 0];
   }
   if (lower.includes("list-to-close") || lower.includes("close price divided by list price")) {
-    return [0, 0, 1];
+    return [0, 0, 1, 0];
   }
   if (lower.includes("california_sold") || lower.includes("closeprice") || lower.includes("listingkey")) {
-    return [0, 1, 0];
+    return [0, 1, 0, 0];
   }
-  return [0, 0, 0];
+  return [0, 0, 0, 0];
 }
 
 const docs = [
@@ -44,6 +47,12 @@ const docs = [
     source: "docs/reference/real-estate-glossary.md",
     sourceType: "glossary",
     title: "Real Estate Glossary"
+  },
+  {
+    content: "Week 5 market summaries include median close price, average price per square foot, average DOM, list-to-close ratio, and monthly trend summaries from california_sold.",
+    source: "docs/reference/week5-market-summaries.md",
+    sourceType: "Week 5 market summary",
+    title: "Week 5 Market Summaries"
   }
 ];
 
@@ -91,12 +100,36 @@ test("indexes documents using injected embeddings and retrieves relevant chunks"
     model: "test-embedding-model"
   });
 
-  assert.equal(index.length, 3);
-  assert.equal(calls.length, 4);
+  assert.equal(index.length, 4);
+  assert.equal(calls.length, 5);
   assert.equal(results.length, 1);
   assert.equal(results[0].rank, 1);
   assert.equal(results[0].title, "MLS Column Mapping");
   assert.match(results[0].chunk, /ListingKey/);
+});
+
+test("indexes the updated Week 8 source set including Week 5 market summaries", async () => {
+  const index = await indexRagDocuments(docs, {
+    chunkSize: 500,
+    chunkOverlap: 50,
+    embeddingProvider: async (text) => vectorForText(text)
+  });
+  const results = await retrieveRagChunks("Which source explains median close price and monthly trend?", index, 1, {
+    embeddingProvider: async (text) => vectorForText(text),
+    minSimilarity: 0.01
+  });
+
+  assert.deepEqual(
+    new Set(index.map((chunk) => chunk.source)),
+    new Set([
+      "docs/reference/real-estate-glossary.md",
+      "docs/reference/mls-column-mapping.md",
+      "docs/reference/week5-market-summaries.md"
+    ])
+  );
+  assert.equal(results.length, 1);
+  assert.equal(results[0].title, "Week 5 Market Summaries");
+  assert.match(results[0].chunk, /median close price/);
 });
 
 test("formats retrieved context and source citations", async () => {
@@ -151,7 +184,7 @@ test("does not call answer generator when no indexed source context is relevant"
       generatorCalled = true;
       return "This should not be used.";
     },
-    embeddingProvider: async () => [0, 0, 0],
+    embeddingProvider: async () => [0, 0, 0, 0],
     minSimilarity: 0.01
   });
 

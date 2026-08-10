@@ -4,10 +4,13 @@ Week 8 adds a document-aware RAG assistant on top of the existing TypeScript ski
 
 ## Knowledge Sources
 
-- `docs/reference/mls-column-mapping.md`
-- `docs/reference/real-estate-glossary.md`
-- `docs/reference/california-real-estate-law-summary.md`
-- Existing Week 2 through Week 7 code and documentation under `skill/` and `docs/`
+- `docs/reference/real-estate-glossary.md` as the Real Estate Data Analyst Primer terminology source.
+- `docs/reference/mls-column-mapping.md` as the Trestle/RESO metadata and MLS schema source.
+- `docs/reference/week5-market-summaries.md` as the Week 5 market analytics summary source.
+
+Optional completeness source:
+
+- Handbook pages 4-5 schema reference for IDX legacy `rets_property` fields that do not map directly to Trestle/RESO names.
 
 ## Pipeline
 
@@ -51,6 +54,7 @@ Source:
 
 - `docs/reference/real-estate-glossary.md`
 - `docs/reference/mls-column-mapping.md`
+- `docs/reference/week5-market-summaries.md`
 
 ## Local Verification
 

@@ -1,6 +1,6 @@
 # California Real Estate Law Summary
 
-This summary is a compact reference for the Week 8 RAG assistant. It is educational project context, not legal advice.
+This summary is an optional supplemental reference. It is not one of the required indexed sources for the updated Week 8 RAG deliverable, which focuses on the Real Estate Data Analyst Primer, Trestle/RESO metadata documentation, and Week 5 market summaries. It is educational project context, not legal advice.
 
 ## Seller Disclosures
 
