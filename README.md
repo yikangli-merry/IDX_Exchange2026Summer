@@ -577,3 +577,56 @@ npm.cmd test
 npm.cmd run check
 
 The RAG tests cover chunking, indexing, retrieval, citations, grounded answer generation, no-context behavior, and the updated Week 8 source set including Week 5 market summaries.
+
+## Week 9 - Multi-Agent Orchestration
+
+This week combines the previous specialized real estate agents into one OpenClaw entry point. The orchestrator classifies each user query, routes it to the right agent, and merges results when a query contains multiple intents.
+
+### Goal
+
+The goal is to build a single intelligent coordinator across five real estate agents:
+
+- `propertySearchAgent` for active listing search from `rets_property`
+- `marketStatsAgent` for market trends and comps from `california_sold`
+- `recommendationAgent` for similar active listings with comp validation
+- `ragAgent` for real estate terminology, MLS field, and market concept questions
+- `emailDraftAgent` for formatted property or market summary email drafts
+
+### Key Work Completed
+
+- Added `skill/src/orchestrator.ts`
+  - Implements `classifyIntent()` for `search`, `market`, `recommend`, `knowledge`, `email`, `mixed`, and `unknown`.
+  - Adds `orchestrate(query, userId)` as the unified OpenClaw entry point.
+  - Routes mixed search plus market questions through property search and market stats in parallel.
+  - Returns a friendly fallback for unsupported requests.
+
+- Added `skill/src/emailDraftAgent.ts`
+  - Generates email drafts only.
+  - Does not send email or connect to any email provider.
+  - Uses recent listing context for property summary drafts.
+  - Uses recent market context for market summary drafts.
+  - Returns a clear no-context message when there is not enough recent context.
+
+- Updated `skill/src/session.ts`
+  - Stores `lastMarketResult` in addition to `lastResults`.
+  - Enables follow-up requests such as drafting a market summary email after a market question.
+
+- Updated `skill/src/index.ts`
+  - Exports the Week 9 orchestrator and email draft helpers.
+  - Updates `run()` so the skill now routes through the orchestrator entry point.
+
+- Added Week 9 tests
+  - Covers intent classification.
+  - Covers single-agent routing.
+  - Covers mixed search plus market routing.
+  - Covers email drafts with listing context, market context, and no context.
+  - Covers unknown-intent fallback.
+
+### Testing
+
+Run from `skill/`:
+
+```powershell
+npm.cmd test
+npm.cmd run check
+```
