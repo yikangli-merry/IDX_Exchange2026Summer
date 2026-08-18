@@ -155,15 +155,15 @@ test("maps parsed filters to rets_property columns", () => {
   });
 });
 
-test("skill wrapper returns both app fields and DB-column filters", async () => {
+test("skill wrapper now routes through the Week 9 orchestrator entry point", async () => {
   await assert.doesNotReject(async () => {
-    const result = await run({ query: "Find townhomes in Newport Beach under $900k." });
-
-    assert.equal(result.filters.type, "Townhouse");
-    assert.deepEqual(result.retsPropertyFilters, {
-      L_City: "Newport Beach",
-      L_SystemPrice: 900000,
-      L_Type_: "Townhouse"
+    const result = await run({
+      query: "Find townhomes in Newport Beach under $900k.",
+      userId: "parser-wrapper-user"
     });
+
+    assert.equal(result.intent, "search");
+    assert.equal(result.agentResults[0].agent, "propertySearchAgent");
+    assert.match(result.response, /bedrooms/i);
   });
 });

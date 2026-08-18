@@ -1,4 +1,5 @@
 import type { ActiveListing } from "./mlsQueries.ts";
+import type { MarketQuestionOutput } from "./marketStats.ts";
 
 export interface UserSession {
   city?: string;
@@ -8,6 +9,7 @@ export interface UserSession {
   type?: string;
   pool?: "True";
   lastResults?: ActiveListing[];
+  lastMarketResult?: MarketQuestionOutput;
   conversationStep: number;
   currentPage?: number;
 }

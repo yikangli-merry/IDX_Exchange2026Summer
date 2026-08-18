@@ -1,4 +1,4 @@
-import { FILTER_COLUMN_MAP, parsePropertyQuery, toRetsPropertyFilters, type PropertyFilter } from "./parser.ts";
+import { FILTER_COLUMN_MAP, parsePropertyQuery, toRetsPropertyFilters } from "./parser.ts";
 import { getSoldComps, searchActiveListings } from "./mlsQueries.ts";
 import { buildCityMarketRowsQuery, getCityMarketSummary, handleMarketQuestion } from "./marketStats.ts";
 import { handlePropertyConversation } from "./conversation.ts";
@@ -34,27 +34,27 @@ import {
   normalizeRagTopK,
   retrieveRagChunks
 } from "./ragAssistant.ts";
+import { draftEmail } from "./emailDraftAgent.ts";
+import {
+  classifyIntent,
+  formatCombinedResponse,
+  orchestrate,
+  type OrchestrationOutput
+} from "./orchestrator.ts";
 
 export interface SkillInput {
   query: string;
+  userId?: string;
 }
 
-export interface SkillOutput {
-  filters: PropertyFilter;
-  retsPropertyFilters: Record<string, string | number>;
-}
+export type SkillOutput = OrchestrationOutput;
 
 export async function run(input: SkillInput): Promise<SkillOutput> {
   if (!input?.query || typeof input.query !== "string") {
     throw new Error("A non-empty query string is required.");
   }
 
-  const filters = parsePropertyQuery(input.query);
-
-  return {
-    filters,
-    retsPropertyFilters: toRetsPropertyFilters(filters)
-  };
+  return orchestrate(input.query, input.userId ?? "default-user");
 }
 
 export {
@@ -64,6 +64,9 @@ export {
   buildCityMarketRowsQuery,
   buildCompValidationQuery,
   buildCreateListingEmbeddingsTableQuery,
+  classifyIntent,
+  draftEmail,
+  formatCombinedResponse,
   buildGroundedAnswerPrompt,
   buildListingEmbeddingText,
   buildRagContext,
@@ -88,6 +91,7 @@ export {
   answerRagQuestion,
   indexRagDocuments,
   normalizeRagTopK,
+  orchestrate,
   parsePropertyQuery,
   recommendSimilarListingsForListing,
   retrieveRagChunks,
@@ -119,6 +123,22 @@ export type {
   RagRetrievalResult,
   RagRetrieveOptions
 } from "./ragAssistant.ts";
+
+export type {
+  EmailDraftInput,
+  EmailDraftOutput,
+  EmailDraftType
+} from "./emailDraftAgent.ts";
+
+export type {
+  AgentHandler,
+  AgentInvocationInput,
+  AgentInvocationResult,
+  AgentName,
+  OrchestrationIntent,
+  OrchestrationOutput,
+  OrchestratorOptions
+} from "./orchestrator.ts";
 
 export type {
   CompValidation,
