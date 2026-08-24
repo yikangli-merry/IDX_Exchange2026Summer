@@ -41,6 +41,12 @@ import {
   orchestrate,
   type OrchestrationOutput
 } from "./orchestrator.ts";
+import {
+  formatForWhatsApp,
+  formatListingsForWhatsApp,
+  onWhatsAppMessage,
+  sendTypingIndicator
+} from "./whatsappHandler.ts";
 
 export interface SkillInput {
   query: string;
@@ -79,7 +85,9 @@ export {
   createRagChunks,
   ensureListingEmbeddingCacheTable,
   findSimilarListings,
+  formatForWhatsApp,
   formatRecommendationReply,
+  formatListingsForWhatsApp,
   generateListingEmbeddings,
   generateGroundedAnswer,
   getCityMarketSummary,
@@ -91,11 +99,13 @@ export {
   answerRagQuestion,
   indexRagDocuments,
   normalizeRagTopK,
+  onWhatsAppMessage,
   orchestrate,
   parsePropertyQuery,
   recommendSimilarListingsForListing,
   retrieveRagChunks,
   searchActiveListings,
+  sendTypingIndicator,
   toRetsPropertyFilters,
   updateSession,
   validateListingWithComps
@@ -139,6 +149,13 @@ export type {
   OrchestrationOutput,
   OrchestratorOptions
 } from "./orchestrator.ts";
+
+export type {
+  WhatsAppLogger,
+  WhatsAppMessageOptions,
+  WhatsAppOrchestrator,
+  WhatsAppTypingIndicator
+} from "./whatsappHandler.ts";
 
 export type {
   CompValidation,
