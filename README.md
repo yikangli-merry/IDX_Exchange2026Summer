@@ -630,3 +630,60 @@ Run from `skill/`:
 npm.cmd test
 npm.cmd run check
 ```
+
+## Week 10 - WhatsApp Communication Layer
+
+This week connects the Week 9 multi-agent orchestrator to WhatsApp as the primary conversational interface. Users can send real estate questions through WhatsApp, and OpenClaw routes the message through the existing agent system before returning a mobile-friendly response.
+
+### Goal
+
+The goal is to make WhatsApp the front door for the OpenClaw real estate assistant.
+
+A user should be able to ask for property searches, market questions, or recommendations from WhatsApp, and receive a clean formatted reply without needing to run commands manually.
+
+### Key Work Completed
+
+- Added `skill/src/whatsappHandler.ts`
+  - Adds `onWhatsAppMessage(message, userId)` as the WhatsApp message entry point.
+  - Sends a typing indicator before running the orchestrator.
+  - Calls `orchestrate(message, userId)` from the Week 9 multi-agent layer.
+  - Converts agent results into WhatsApp-friendly text.
+  - Limits listing replies to the first 5 properties for mobile readability.
+  - Formats listing details with address, city, price, beds, baths, square footage, and days on market.
+  - Returns a normal text response when no listing array is available.
+  - Returns `No results found.` when there are no listings and no fallback response.
+  - Catches orchestration errors and returns `Sorry, I hit an issue. Please try again.`
+
+- Updated `skill/src/index.ts`
+  - Exports the WhatsApp handler helpers.
+  - Keeps the Week 9 orchestrator as the main routing layer.
+
+- Added `skill/tests/whatsappHandler.test.mjs`
+  - Tests that the handler sends the typing indicator before calling the orchestrator.
+  - Tests listing formatting and the 5-listing limit.
+  - Tests fallback responses when no listings are returned.
+  - Tests the `No results found.` fallback.
+  - Tests user-friendly error handling when orchestration fails.
+
+- Updated `skill/package.json`
+  - Adds the WhatsApp handler test to the test script.
+  - Adds the WhatsApp handler source file to the syntax check script.
+
+### WhatsApp Integration
+
+The local OpenClaw Gateway was linked to WhatsApp using QR device linking. After adding the testing WhatsApp number to the allowlist, the full message flow was verified:
+
+```text
+WhatsApp message
+→ OpenClaw WhatsApp channel
+→ onWhatsAppMessage()
+→ orchestrate()
+→ selected real estate agent
+→ formatted WhatsApp reply
+```
+Run from `skill/`:
+
+```powershell
+npm.cmd test
+npm.cmd run check
+```
