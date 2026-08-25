@@ -2,6 +2,11 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { draftEmail } from "../src/emailDraftAgent.ts";
 
+const env = {
+  EMAIL_FROM: "IDX Exchange <advisor@example.com>",
+  EMAIL_USER: "advisor@example.com"
+};
+
 function listing(overrides = {}) {
   return {
     address: "123 Main St",
@@ -52,8 +57,8 @@ function marketResult(overrides = {}) {
   };
 }
 
-test("drafts a property summary email from recent listing context", () => {
-  const output = draftEmail({
+test("drafts a pending property summary email from recent listing context", async () => {
+  const output = await draftEmail({
     message: "Draft an email about these listings.",
     recipientName: "Alex",
     senderName: "IDX Advisor",
@@ -61,45 +66,52 @@ test("drafts a property summary email from recent listing context", () => {
       conversationStep: 1,
       lastResults: [listing()]
     }
+  }, {
+    env,
+    propertySummary: {
+      compRows: []
+    }
   });
 
   assert.equal(output.draftType, "property_summary");
   assert.equal(output.missingContext, false);
-  assert.equal(output.subject, "Property options for your review");
+  assert.equal(output.status, "pending_approval");
+  assert.match(output.draftId, /^draft_/);
   assert.match(output.body, /Hi Alex/);
   assert.match(output.body, /123 Main St, Irvine/);
   assert.match(output.body, /\$1,150,000/);
-  assert.match(output.response, /^Subject: Property options/m);
+  assert.match(output.preview, /SEND EMAIL draft_/);
 });
 
-test("drafts a market summary email from recent market context", () => {
-  const output = draftEmail({
+test("drafts a pending market summary email from recent market context", async () => {
+  const output = await draftEmail({
     message: "Please write a market email summary.",
     session: {
       conversationStep: 1,
       lastMarketResult: marketResult()
     }
-  });
+  }, { env });
 
   assert.equal(output.draftType, "market_summary");
   assert.equal(output.missingContext, false);
-  assert.equal(output.subject, "Market summary for Pasadena");
-  assert.match(output.body, /Sold comps: 42/);
-  assert.match(output.body, /Median close price: \$1,180,000/);
-  assert.match(output.body, /Market summary for Pasadena over the last 12 month/);
+  assert.equal(output.status, "pending_approval");
+  assert.equal(output.subject, "Weekly market report for Pasadena");
+  assert.match(output.body, /42 sale/);
+  assert.match(output.body, /aggregated california_sold analytics/);
+  assert.match(output.response, /SEND EMAIL draft_/);
 });
 
-test("returns a clear no-context response when nothing recent is available", () => {
-  const output = draftEmail({
+test("returns a clear no-context response when nothing recent is available", async () => {
+  const output = await draftEmail({
     message: "Draft an email.",
     session: {
       conversationStep: 0,
       lastResults: []
     }
-  });
+  }, { env });
 
   assert.equal(output.draftType, "no_context");
   assert.equal(output.missingContext, true);
   assert.equal(output.subject, "");
-  assert.match(output.response, /not have enough recent property or market context/i);
+  assert.match(output.response, /not have enough recent property, market, or recommendation context/i);
 });

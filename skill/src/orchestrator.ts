@@ -1,5 +1,12 @@
 import { handlePropertyConversation, type ConversationOptions, type ConversationOutput } from "./conversation.ts";
 import { draftEmail, type EmailDraftInput, type EmailDraftOutput } from "./emailDraftAgent.ts";
+import {
+  sendApprovedEmail,
+  type EmailApprovalOptions,
+  type EmailSendResult,
+  type PendingEmailDraft
+} from "./emailApproval.ts";
+import type { EmailWorkflowOptions } from "./emailWorkflows.ts";
 import { formatMarketStatsReply, handleMarketQuestion, type MarketQuestionOptions, type MarketQuestionOutput } from "./marketStats.ts";
 import {
   formatRecommendationReply,
@@ -18,6 +25,7 @@ import { getSession, updateSession, type UserSession } from "./session.ts";
 
 export type OrchestrationIntent = "email" | "knowledge" | "market" | "mixed" | "recommend" | "search" | "unknown";
 export type AgentName = "emailDraftAgent" | "marketStatsAgent" | "propertySearchAgent" | "ragAgent" | "recommendationAgent";
+export type ApprovedEmailSender = (draft: PendingEmailDraft, confirmation: string) => Promise<EmailSendResult>;
 
 export interface AgentInvocationInput {
   query: string;
@@ -34,8 +42,11 @@ export interface AgentInvocationResult<TData = unknown> {
 export type AgentHandler<TData = unknown> = (input: AgentInvocationInput) => Promise<AgentInvocationResult<TData>>;
 
 export interface OrchestratorOptions {
+  approvedEmailSender?: ApprovedEmailSender;
+  emailApprovalOptions?: EmailApprovalOptions;
   emailDraftAgent?: AgentHandler<EmailDraftOutput>;
   emailOptions?: Omit<EmailDraftInput, "message" | "session">;
+  emailWorkflowOptions?: EmailWorkflowOptions;
   marketQuestionOptions?: MarketQuestionOptions;
   marketStatsAgent?: AgentHandler<MarketQuestionOutput>;
   propertySearchAgent?: AgentHandler<ConversationOutput>;
@@ -74,8 +85,9 @@ export function classifyIntent(query: string): OrchestrationIntent {
     return "unknown";
   }
 
-  const wantsEmail = hasPattern(normalized, [
+  const wantsEmail = isEmailApprovalCommand(normalized) || hasPattern(normalized, [
     /\b(?:draft|compose|write|prepare)\b.*\b(?:email|mail|message|summary)\b/i,
+    /\b(?:draft|compose|write|prepare|send)\b.*\b(?:listing alert|market report|property summary|recommendation digest|digest)\b/i,
     /\b(?:email|mail)\b/i
   ]);
   if (wantsEmail) {
@@ -122,6 +134,10 @@ export function classifyIntent(query: string): OrchestrationIntent {
   }
 
   return "unknown";
+}
+
+export function isEmailApprovalCommand(query: string): boolean {
+  return /^SEND EMAIL \S+$/u.test(query.trim());
 }
 
 function extractTargetListingId(query: string, session: UserSession): string | number | null {
@@ -215,12 +231,43 @@ async function runRagAgent(
 async function runEmailDraftAgent(
   input: AgentInvocationInput,
   options: OrchestratorOptions
-): Promise<AgentInvocationResult<EmailDraftOutput>> {
-  const output = draftEmail({
+): Promise<AgentInvocationResult<EmailDraftOutput | EmailSendResult>> {
+  if (isEmailApprovalCommand(input.query)) {
+    const pendingDraft = getSession(input.userId).pendingEmailDraft;
+    if (!pendingDraft) {
+      return {
+        agent: "emailDraftAgent",
+        response: "There is no pending email draft to send. Please draft an email first."
+      };
+    }
+
+    const sender = options.approvedEmailSender
+      ?? ((draft: PendingEmailDraft, confirmation: string) => sendApprovedEmail(
+        draft,
+        confirmation,
+        options.emailApprovalOptions
+      ));
+    const output = await sender(pendingDraft, input.query);
+    if (output.sent) {
+      updateSession(input.userId, { pendingEmailDraft: undefined });
+    }
+
+    return {
+      agent: "emailDraftAgent",
+      data: output,
+      response: output.response
+    };
+  }
+
+  const output = await draftEmail({
     ...options.emailOptions,
     message: input.query,
     session: getSession(input.userId)
-  });
+  }, options.emailWorkflowOptions);
+
+  if (output.draft) {
+    updateSession(input.userId, { pendingEmailDraft: output.draft });
+  }
 
   return {
     agent: "emailDraftAgent",

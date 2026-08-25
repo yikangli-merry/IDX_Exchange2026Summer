@@ -1,5 +1,6 @@
 import type { ActiveListing } from "./mlsQueries.ts";
 import type { MarketQuestionOutput } from "./marketStats.ts";
+import type { PendingEmailDraft } from "./emailApproval.ts";
 
 export interface UserSession {
   city?: string;
@@ -10,6 +11,7 @@ export interface UserSession {
   pool?: "True";
   lastResults?: ActiveListing[];
   lastMarketResult?: MarketQuestionOutput;
+  pendingEmailDraft?: PendingEmailDraft;
   conversationStep: number;
   currentPage?: number;
 }

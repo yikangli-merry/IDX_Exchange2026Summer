@@ -36,8 +36,31 @@ import {
 } from "./ragAssistant.ts";
 import { draftEmail } from "./emailDraftAgent.ts";
 import {
+  buildApprovalToken,
+  createEmailTransporter,
+  createPendingEmailDraft,
+  isExactApprovalConfirmation,
+  sanitizeEmailError,
+  sendApprovedEmail
+} from "./emailApproval.ts";
+import {
+  buildListingAlertQuery,
+  buildMarketReportRowsQuery,
+  buildPropertyCompSummaryQuery,
+  buildPropertySummaryListingQuery,
+  classifyEmailWorkflow,
+  createEmailWorkflowDraft,
+  draftListingAlertEmail,
+  draftMarketReportEmail,
+  draftPropertySummaryEmail,
+  draftRecommendationDigestEmail,
+  formatMarketReportRow,
+  formatPropertyCompSummary
+} from "./emailWorkflows.ts";
+import {
   classifyIntent,
   formatCombinedResponse,
+  isEmailApprovalCommand,
   orchestrate,
   type OrchestrationOutput
 } from "./orchestrator.ts";
@@ -67,6 +90,7 @@ export {
   clearSession,
   FILTER_COLUMN_MAP,
   buildActiveListingEmbeddingSourceQuery,
+  buildApprovalToken,
   buildCityMarketRowsQuery,
   buildCompValidationQuery,
   buildCreateListingEmbeddingsTableQuery,
@@ -75,17 +99,31 @@ export {
   formatCombinedResponse,
   buildGroundedAnswerPrompt,
   buildListingEmbeddingText,
+  buildListingAlertQuery,
+  buildMarketReportRowsQuery,
+  buildPropertyCompSummaryQuery,
+  buildPropertySummaryListingQuery,
   buildRagContext,
   buildRecommendationRowsQuery,
   buildSemanticListingCacheQuery,
   calculateHybridSimilarityScore,
   chunkText,
   citationsFromChunks,
+  classifyEmailWorkflow,
   cosineSimilarity,
   createRagChunks,
+  createEmailTransporter,
+  createEmailWorkflowDraft,
+  createPendingEmailDraft,
+  draftListingAlertEmail,
+  draftMarketReportEmail,
+  draftPropertySummaryEmail,
+  draftRecommendationDigestEmail,
   ensureListingEmbeddingCacheTable,
   findSimilarListings,
   formatForWhatsApp,
+  formatMarketReportRow,
+  formatPropertyCompSummary,
   formatRecommendationReply,
   formatListingsForWhatsApp,
   generateListingEmbeddings,
@@ -98,13 +136,17 @@ export {
   handlePropertyConversation,
   answerRagQuestion,
   indexRagDocuments,
+  isEmailApprovalCommand,
+  isExactApprovalConfirmation,
   normalizeRagTopK,
   onWhatsAppMessage,
   orchestrate,
   parsePropertyQuery,
   recommendSimilarListingsForListing,
   retrieveRagChunks,
+  sanitizeEmailError,
   searchActiveListings,
+  sendApprovedEmail,
   sendTypingIndicator,
   toRetsPropertyFilters,
   updateSession,
@@ -141,10 +183,36 @@ export type {
 } from "./emailDraftAgent.ts";
 
 export type {
+  EmailApprovalLogger,
+  EmailApprovalOptions,
+  EmailDraftRequest,
+  EmailDraftStatus,
+  EmailSendResult,
+  EmailTransporter,
+  EmailWorkflowType,
+  PendingEmailDraft,
+  SentEmailDraft
+} from "./emailApproval.ts";
+
+export type {
+  EmailWorkflowBuiltQuery,
+  EmailWorkflowDraftOutput,
+  EmailWorkflowInput,
+  EmailWorkflowOptions,
+  ListingAlertSearchOptions,
+  MarketReportOptions,
+  MarketReportRow,
+  PropertyCompSummary,
+  PropertySummaryOptions,
+  RecommendationDigestOptions
+} from "./emailWorkflows.ts";
+
+export type {
   AgentHandler,
   AgentInvocationInput,
   AgentInvocationResult,
   AgentName,
+  ApprovedEmailSender,
   OrchestrationIntent,
   OrchestrationOutput,
   OrchestratorOptions
