@@ -681,6 +681,60 @@ WhatsApp message
 → selected real estate agent
 → formatted WhatsApp reply
 ```
+
+## Week 11 - Email Agents & Safety Guardrails
+
+### Goal
+
+Week 11 adds automated email workflows for listing alerts, weekly market reports, property summaries, and recommendation digests, with strict human-approval guardrails. The agent can prepare email drafts and previews, but it never sends an email unless the user provides an exact approval command.
+
+### Key Work Completed
+
+- Added `skill/src/emailApproval.ts`
+  - Creates pending email drafts with `draftId`, `approvalToken`, `preview`, and `pending_approval` status.
+  - Sends email only after the exact confirmation format: `SEND EMAIL <draftId>`.
+  - Uses Nodemailer for approved sending.
+  - Supports mock transporters so unit tests never send real emails.
+  - Redacts secrets from send errors before logging or returning messages.
+
+- Added `skill/src/emailWorkflows.ts`
+  - Supports new listing alert drafts from `rets_property`.
+  - Supports weekly market report drafts from aggregated `california_sold` analytics.
+  - Supports property summary card drafts with address, price, photo count, and comp summary.
+  - Supports personalized recommendation digest drafts.
+  - Limits listing and recommendation email content to five properties.
+  - Uses aggregated market rows instead of exporting full MLS sold datasets.
+
+- Updated `skill/src/emailDraftAgent.ts`
+  - Upgraded draft behavior from plain text generation to pending approval draft generation.
+  - Returns draft metadata including `draftId`, `status`, `workflowType`, `to`, `subject`, `body`, and `preview`.
+
+- Updated `skill/src/orchestrator.ts`
+  - Routes email workflow requests to the email draft agent.
+  - Stores pending drafts in session.
+  - Sends only when the user provides the exact `SEND EMAIL <draftId>` approval token.
+  - Casual replies such as “yes”, “ok”, or “send it” do not trigger sending.
+
+- Updated `.env.example`
+  - Added `EMAIL_SERVICE`, `EMAIL_USER`, `EMAIL_PASSWORD`, and `EMAIL_FROM`.
+  - Real credentials must stay in local `.env` only.
+
+### Safety Rules
+
+- No email is sent automatically.
+- Every outbound email must be queued as a draft first.
+- Human approval must use the exact draft-specific approval token.
+- Secrets are never committed and should never be logged.
+- MLS sold data is summarized through aggregation and not bulk-exported.
+
+### Testing
+
+Run from `skill/`:
+
+```powershell
+npm.cmd test
+npm.cmd run check
+```
 Run from `skill/`:
 
 ```powershell
