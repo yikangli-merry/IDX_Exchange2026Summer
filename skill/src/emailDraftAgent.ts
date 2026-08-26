@@ -42,6 +42,13 @@ export interface EmailDraftOutput {
   workflowType: EmailWorkflowType;
 }
 
+const EMAIL_ADDRESS_PATTERN = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i;
+
+export function extractEmailAddress(message: string): string | null {
+  const match = message.match(EMAIL_ADDRESS_PATTERN);
+  return match?.[0] ?? null;
+}
+
 function draftTypeFromWorkflow(workflowType: EmailWorkflowType, missingContext: boolean): EmailDraftType {
   if (missingContext || workflowType === "general_draft") {
     return "no_context";
@@ -65,7 +72,7 @@ export async function draftEmail(
     listingId: input.listingId,
     message: input.message,
     months: input.months,
-    recipientEmail: input.recipientEmail ?? input.to,
+    recipientEmail: input.recipientEmail ?? input.to ?? extractEmailAddress(input.message),
     recipientName: input.recipientName,
     senderName: input.senderName,
     session: input.session,

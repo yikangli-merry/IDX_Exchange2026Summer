@@ -34,7 +34,7 @@ import {
   normalizeRagTopK,
   retrieveRagChunks
 } from "./ragAssistant.ts";
-import { draftEmail } from "./emailDraftAgent.ts";
+import { draftEmail, extractEmailAddress } from "./emailDraftAgent.ts";
 import {
   buildApprovalToken,
   createEmailTransporter,
@@ -120,6 +120,7 @@ export {
   draftPropertySummaryEmail,
   draftRecommendationDigestEmail,
   ensureListingEmbeddingCacheTable,
+  extractEmailAddress,
   findSimilarListings,
   formatForWhatsApp,
   formatMarketReportRow,

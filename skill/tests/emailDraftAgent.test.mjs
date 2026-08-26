@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { draftEmail } from "../src/emailDraftAgent.ts";
+import { draftEmail, extractEmailAddress } from "../src/emailDraftAgent.ts";
 
 const env = {
   EMAIL_FROM: "IDX Exchange <advisor@example.com>",
@@ -57,6 +57,14 @@ function marketResult(overrides = {}) {
   };
 }
 
+test("extracts a recipient email address from the draft request text", () => {
+  assert.equal(
+    extractEmailAddress("Draft a market report email to client@example.com for Irvine."),
+    "client@example.com"
+  );
+  assert.equal(extractEmailAddress("Draft a market report email."), null);
+});
+
 test("drafts a pending property summary email from recent listing context", async () => {
   const output = await draftEmail({
     message: "Draft an email about these listings.",
@@ -85,7 +93,7 @@ test("drafts a pending property summary email from recent listing context", asyn
 
 test("drafts a pending market summary email from recent market context", async () => {
   const output = await draftEmail({
-    message: "Please write a market email summary.",
+    message: "Please write a market email summary to client@example.com.",
     session: {
       conversationStep: 1,
       lastMarketResult: marketResult()
@@ -96,6 +104,7 @@ test("drafts a pending market summary email from recent market context", async (
   assert.equal(output.missingContext, false);
   assert.equal(output.status, "pending_approval");
   assert.equal(output.subject, "Weekly market report for Pasadena");
+  assert.equal(output.to, "client@example.com");
   assert.match(output.body, /42 sale/);
   assert.match(output.body, /aggregated california_sold analytics/);
   assert.match(output.response, /SEND EMAIL draft_/);
