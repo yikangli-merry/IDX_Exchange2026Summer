@@ -49,6 +49,27 @@ export function extractEmailAddress(message: string): string | null {
   return match?.[0] ?? null;
 }
 
+function normalizeSignatureName(value: string | undefined): string | null {
+  const normalized = value
+    ?.trim()
+    .replace(/\s+/g, " ")
+    .replace(/^(?:best|regards|sincerely|thanks),?\s+/i, "")
+    .replace(/[.!?]\s*$/u, "");
+  return normalized ? normalized : null;
+}
+
+export function extractSenderName(message: string): string | null {
+  const signatureMatch = message.match(
+    /\b(?:change\s+the\s+)?signature\s+(?:to|as)\s+(.+?)(?:[.!?]\s*$|$)/i
+  );
+  if (signatureMatch?.[1]) {
+    return normalizeSignatureName(signatureMatch[1]);
+  }
+
+  const signAsMatch = message.match(/\bsign\s+(?:it\s+)?(?:as|from)\s+(.+?)(?:[.!?]\s*$|$)/i);
+  return signAsMatch?.[1] ? normalizeSignatureName(signAsMatch[1]) : null;
+}
+
 function draftTypeFromWorkflow(workflowType: EmailWorkflowType, missingContext: boolean): EmailDraftType {
   if (missingContext || workflowType === "general_draft") {
     return "no_context";
@@ -74,7 +95,7 @@ export async function draftEmail(
     months: input.months,
     recipientEmail: input.recipientEmail ?? input.to ?? extractEmailAddress(input.message),
     recipientName: input.recipientName,
-    senderName: input.senderName,
+    senderName: input.senderName ?? extractSenderName(input.message) ?? undefined,
     session: input.session,
     subject: input.subject
   };

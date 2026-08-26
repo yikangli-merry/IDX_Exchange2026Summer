@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { draftEmail, extractEmailAddress } from "../src/emailDraftAgent.ts";
+import { draftEmail, extractEmailAddress, extractSenderName } from "../src/emailDraftAgent.ts";
 
 const env = {
   EMAIL_FROM: "IDX Exchange <advisor@example.com>",
@@ -65,6 +65,15 @@ test("extracts a recipient email address from the draft request text", () => {
   assert.equal(extractEmailAddress("Draft a market report email."), null);
 });
 
+test("extracts a sender name from signature instructions", () => {
+  assert.equal(
+    extractSenderName("Draft an email. And change the signature to Best, Merry"),
+    "Merry"
+  );
+  assert.equal(extractSenderName("Please sign it as Yikang Li."), "Yikang Li");
+  assert.equal(extractSenderName("Draft a market report email."), null);
+});
+
 test("drafts a pending property summary email from recent listing context", async () => {
   const output = await draftEmail({
     message: "Draft an email about these listings.",
@@ -93,7 +102,7 @@ test("drafts a pending property summary email from recent listing context", asyn
 
 test("drafts a pending market summary email from recent market context", async () => {
   const output = await draftEmail({
-    message: "Please write a market email summary to client@example.com.",
+    message: "Please write a market email summary to client@example.com. Change the signature to Best, Merry",
     session: {
       conversationStep: 1,
       lastMarketResult: marketResult()
@@ -107,6 +116,7 @@ test("drafts a pending market summary email from recent market context", async (
   assert.equal(output.to, "client@example.com");
   assert.match(output.body, /42 sale/);
   assert.match(output.body, /aggregated california_sold analytics/);
+  assert.match(output.body, /Best,\nMerry/);
   assert.match(output.response, /SEND EMAIL draft_/);
 });
 
