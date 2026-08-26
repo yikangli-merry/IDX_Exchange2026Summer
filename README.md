@@ -741,3 +741,38 @@ Run from `skill/`:
 npm.cmd test
 npm.cmd run check
 ```
+
+## Week 12 - Capstone Demo and Final Project Delivery
+
+Week 12 focused on packaging the IDX Multi-Agent Real Estate Assistant into a demo-ready final project. The system brings together natural language property search, conversational memory, market analytics, comp-supported recommendations, semantic search, RAG knowledge answering, WhatsApp interaction, and human-approved email workflows.
+
+### Final Capabilities
+
+- Natural language active listing search using `rets_property`
+- Multi-turn conversational memory for search refinement
+- City-level market analytics and trends using `california_sold`
+- Comp-supported price and recommendation workflows
+- Semantic similarity search over active listing remarks
+- RAG assistant for MLS fields, real estate terms, and market concepts
+- Multi-agent orchestration across search, market, recommendation, RAG, and email agents
+- WhatsApp-ready response formatting
+- Email draft workflows with strict human approval before sending
+
+### Final Deliverables
+
+- Clean GitHub repository with documented project history
+- Final architecture diagram for the multi-agent workflow
+- Schema annotation notes for MLS table usage
+- Five-minute live demo script
+- Backup demo recording plan
+- Final written reflection
+
+### Verification
+
+Run from the skill package:
+
+```powershell
+cd skill
+npm.cmd test
+npm.cmd run check
+```
