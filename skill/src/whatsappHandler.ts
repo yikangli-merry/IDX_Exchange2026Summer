@@ -62,6 +62,13 @@ export async function onWhatsAppMessage(
 }
 
 export function formatForWhatsApp(result: OrchestrationOutput): string {
+  if (result.intent === "mixed") {
+    const response = result.response.trim();
+    if (response) {
+      return response;
+    }
+  }
+
   const listings = collectListings(result);
   if (listings.length > 0) {
     return formatListingsForWhatsApp(listings);

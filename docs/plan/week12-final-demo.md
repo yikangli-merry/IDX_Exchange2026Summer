@@ -16,6 +16,18 @@ The demo should show these capabilities in one sequence:
 - WhatsApp-friendly response formatting
 - Email draft workflow with explicit approval gate
 
+## Pre-Demo Readiness
+
+Run these from `skill/` before the live demo:
+
+```powershell
+npm.cmd test
+npm.cmd run check
+npm.cmd run embeddings:generate
+```
+
+The test and check commands verify the package without live services. The embedding command is the live semantic-search setup step; it requires a real `OPENAI_API_KEY`, MySQL credentials, and an accessible `rets_property` table. If `.env` still contains placeholder values, replace them locally before running the command.
+
 ## Five-Minute Demo Script
 
 ### 0:00-0:30 - Setup
@@ -23,6 +35,7 @@ The demo should show these capabilities in one sequence:
 - Open the local project and test terminal.
 - Show that the assistant is running through the OpenClaw skill package.
 - Mention that secrets, local `.env`, database dumps, and raw MLS exports are not committed.
+- Mention that listing embeddings have already been generated for the demo environment.
 
 ### 0:30-1:45 - Mixed Search and Market Question
 
@@ -69,7 +82,7 @@ Recommend similar listings to the first one.
 
 Expected result:
 
-- Semantic matching uses listing text and embeddings.
+- `semanticSearchAgent` uses listing text, `L_Remarks`, and cached embeddings.
 - Recommendation scoring combines structured similarity and semantic similarity.
 - Comp validation uses recent `california_sold` records to explain price support.
 
@@ -83,7 +96,7 @@ What is a list-to-close ratio?
 
 Expected result:
 
-- `ragAgent` answers from indexed project documents.
+- `ragAgent` answers from the default `docs/reference/*.md` RAG index.
 - The answer stays grounded in source context.
 - Citations point to the relevant reference docs.
 
@@ -116,8 +129,10 @@ Expected result:
 
 - Record the terminal showing `npm.cmd test` passing.
 - Record the terminal showing `npm.cmd run check` passing.
+- Record the terminal showing `npm.cmd run embeddings:generate` completing on the demo machine.
 - Record the WhatsApp mixed-intent query and response.
 - Record a follow-up refinement that uses session memory.
+- Record a semantic search result and one recommendation with comp validation.
 - Record a RAG answer with citations.
 - Record an email draft preview and the approval gate behavior.
 - Avoid showing real API keys, passwords, `.env`, personal phone numbers, or private MLS exports.
@@ -129,11 +144,12 @@ Run from `_project/skill`:
 ```powershell
 npm.cmd test
 npm.cmd run check
+npm.cmd run embeddings:generate
 ```
 
 Expected result:
 
 - All unit tests pass.
 - TypeScript syntax checks pass.
-- No live MySQL, OpenAI, WhatsApp, or email provider is required for the unit tests.
-
+- Listing embeddings are present in `rets_property_embeddings` before semantic and recommendation demos.
+- No live MySQL, OpenAI, WhatsApp, or email provider is required for the unit tests; MySQL and OpenAI are required for embedding generation and live semantic/RAG behavior.

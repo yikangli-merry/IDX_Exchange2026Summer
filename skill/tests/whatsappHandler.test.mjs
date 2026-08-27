@@ -81,6 +81,26 @@ test("formats recommendation arrays returned by an agent", () => {
   assert.match(reply, /\$1,100,000/);
 });
 
+test("preserves mixed orchestration responses so market summaries are not dropped", () => {
+  const reply = formatForWhatsApp(orchestrationResult({
+    agentResults: [{
+      agent: "propertySearchAgent",
+      data: {
+        results: [listing(1)]
+      },
+      response: "listing reply"
+    }, {
+      agent: "marketStatsAgent",
+      response: "market reply"
+    }],
+    intent: "mixed",
+    response: "Property search:\nlisting reply\n\nMarket stats:\nmarket reply"
+  }));
+
+  assert.match(reply, /Property search:\nlisting reply/);
+  assert.match(reply, /Market stats:\nmarket reply/);
+});
+
 test("returns regular responses when there are no listings", () => {
   const reply = formatForWhatsApp(orchestrationResult({
     agentResults: [{

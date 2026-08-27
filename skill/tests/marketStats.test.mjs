@@ -80,6 +80,12 @@ test("extracts city from common market question wording", () => {
   assert.equal(extractMarketCity("What is the average price per sq ft in Pasadena?"), "Pasadena");
   assert.equal(extractMarketCity("Is now a good time to buy in San Diego?"), "San Diego");
   assert.equal(extractMarketCity("Pasadena market summary"), "Pasadena");
+  assert.equal(extractMarketCity("Irvine market"), "Irvine");
+  assert.equal(extractMarketCity("How is the Irvine market trending?"), "Irvine");
+  assert.equal(
+    extractMarketCity("Find 3 bedroom homes in Irvine under $1.5M and tell me how the Irvine market is trending."),
+    "Irvine"
+  );
 });
 
 test("formats raw city market rows into numeric agent fields", () => {

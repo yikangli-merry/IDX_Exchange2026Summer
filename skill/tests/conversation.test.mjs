@@ -115,6 +115,28 @@ test("updates budget without losing earlier session preferences", async () => {
   assert.equal(calls[1].type, "SingleFamilyResidence");
 });
 
+test("searches immediately when city budget and bedroom detail are present", async () => {
+  const userId = "direct-detail-user";
+  clearSession(userId);
+  const calls = [];
+  const searchListings = async (filters, page, limit) => {
+    calls.push({ filters, page, limit });
+    return result([listing()]);
+  };
+
+  const reply = await handlePropertyConversation(
+    { message: "Find 3 bedroom homes in Irvine under $1.5M.", userId },
+    { searchListings }
+  );
+
+  assert.equal(reply.askedFor, undefined);
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].filters.city, "Irvine");
+  assert.equal(calls[0].filters.maxPrice, 1500000);
+  assert.equal(calls[0].filters.beds, 3);
+  assert.match(reply.reply, /123 Main St/);
+});
+
 test("keeps sessions isolated by user id", async () => {
   const firstUser = "first-user";
   const secondUser = "second-user";

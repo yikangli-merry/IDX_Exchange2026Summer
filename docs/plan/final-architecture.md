@@ -32,6 +32,7 @@ flowchart LR
     Orchestrator <--> Session
     Orchestrator --> Search
     Orchestrator --> Market
+    Orchestrator --> Semantic
     Orchestrator --> Recommend
     Orchestrator --> RAG
     Orchestrator --> Email
@@ -59,6 +60,7 @@ flowchart LR
 |---|---|---|---|
 | `propertySearchAgent` | `skill/src/conversation.ts` | `rets_property` | Parse natural language filters, manage multi-turn search state, and return active listings. |
 | `marketStatsAgent` | `skill/src/marketStats.ts` | `california_sold` | Summarize sold records into city-level market metrics and trends. |
+| `semanticSearchAgent` | `skill/src/semanticSearch.ts` | `rets_property` and `rets_property_embeddings` | Rank active listings by embedding similarity against natural language lifestyle or remarks-based queries. |
 | `recommendationAgent` | `skill/src/recommendationEngine.ts` | `rets_property` and `california_sold` | Recommend similar active listings and validate prices against sold comps. |
 | `ragAgent` | `skill/src/ragAssistant.ts` | Indexed docs | Answer MLS field, real estate term, and market concept questions with citations. |
 | `emailDraftAgent` | `skill/src/emailDraftAgent.ts` | Session context and aggregated data | Create email drafts for listing alerts, market reports, property summaries, and recommendation digests. |
@@ -67,7 +69,7 @@ flowchart LR
 
 1. A user sends a WhatsApp message.
 2. The OpenClaw Gateway forwards the message into the skill runtime.
-3. `orchestrate(query, userId)` classifies intent as `search`, `market`, `recommend`, `knowledge`, `email`, `mixed`, or `unknown`.
+3. `orchestrate(query, userId)` classifies intent as `search`, `market`, `semantic`, `recommend`, `knowledge`, `email`, `mixed`, or `unknown`.
 4. The orchestrator calls the matching agent and passes the current user session.
 5. Agents query only the data sources required for the request.
 6. The session stores useful context such as recent listings, recent market results, and pending email drafts.
@@ -75,9 +77,10 @@ flowchart LR
 
 ## Data Boundaries
 
-- `rets_property` is used for active listing search, semantic listing text, and recommendation candidates.
+- `rets_property` is used for active listing search, semantic listing text, and recommendation candidates. The physical listing id is `L_ListingID`; the skill aliases it as `ListingID` in agent-facing rows.
 - `california_sold` is used for market analytics, sold comps, trend summaries, and price validation.
-- Indexed docs are used for RAG answers about terminology, field definitions, and project concepts.
+- `rets_property_embeddings` caches listing embeddings for semantic search and hybrid recommendations.
+- Indexed docs from `docs/reference/*.md` are used for RAG answers about terminology, field definitions, and project concepts.
 - Email workflows use summarized listing or market context and never bulk-export raw MLS datasets.
 
 ## Safety Controls
@@ -88,4 +91,3 @@ flowchart LR
 - Email workflows create pending drafts first.
 - Sending requires the exact approval command `SEND EMAIL <draftId>`.
 - Casual confirmations do not trigger email sending.
-

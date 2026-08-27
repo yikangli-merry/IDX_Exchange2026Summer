@@ -155,15 +155,13 @@ export function buildActiveListingSearchQuery(
     where.push("AssociationFee <= ?");
   }
 
-  params.push(pagination.queryLimit, pagination.offset);
-
   return {
     criteria,
     pagination,
     params,
     sql: `
       SELECT
-        ListingID, L_DisplayId, L_Address, L_City, L_Zip,
+        L_ListingID AS ListingID, L_DisplayId, L_Address, L_City, L_Zip,
         L_SystemPrice AS price, L_Keyword2 AS beds, LM_Dec_3 AS baths,
         LM_Int2_3 AS sqft, L_Type_ AS type, L_Status AS status,
         LMD_MP_Latitude AS lat, LMD_MP_Longitude AS lng,
@@ -173,7 +171,7 @@ export function buildActiveListingSearchQuery(
       FROM rets_property
       WHERE ${where.join(" AND ")}
       ORDER BY L_SystemPrice ASC
-      LIMIT ? OFFSET ?
+      LIMIT ${pagination.queryLimit} OFFSET ${pagination.offset}
     `.trim()
   };
 }
@@ -195,7 +193,7 @@ export function buildSoldCompsQuery(city: string, months = 12, page = 1, limit =
   return {
     criteria,
     pagination,
-    params: [safeCity, safeMonths, criteria.propertyType, pagination.queryLimit, pagination.offset],
+    params: [safeCity, safeMonths, criteria.propertyType],
     sql: `
       SELECT
         ListingKey, UnparsedAddress, City, CloseDate, ClosePrice,
@@ -208,7 +206,7 @@ export function buildSoldCompsQuery(city: string, months = 12, page = 1, limit =
         AND CloseDate >= DATE_SUB(CURDATE(), INTERVAL ? MONTH)
         AND PropertyType = ?
       ORDER BY CloseDate DESC
-      LIMIT ? OFFSET ?
+      LIMIT ${pagination.queryLimit} OFFSET ${pagination.offset}
     `.trim()
   };
 }
@@ -262,7 +260,7 @@ export function formatActiveListingRow(row: RawRow): ActiveListing {
     hasView: stringValue(row.ViewYN),
     latitude: numberValue(row.lat),
     listingAgent: fullName(row.LA1_UserFirstName, row.LA1_UserLastName),
-    listingId: idValue(row.ListingID),
+    listingId: idValue(row.ListingID ?? row.L_ListingID),
     listingOffice: stringValue(row.LO1_OrganizationName),
     longitude: numberValue(row.lng),
     photoCount: numberValue(row.PhotoCount),

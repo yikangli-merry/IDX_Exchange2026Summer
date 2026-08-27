@@ -13,10 +13,11 @@ test("builds active listing search with default active status and pagination", (
   const built = buildActiveListingSearchQuery();
 
   assert.match(built.sql, /FROM rets_property/);
+  assert.match(built.sql, /L_ListingID AS ListingID/);
   assert.match(built.sql, /WHERE L_Status = \?/);
   assert.match(built.sql, /ORDER BY L_SystemPrice ASC/);
-  assert.match(built.sql, /LIMIT \? OFFSET \?/);
-  assert.deepEqual(built.params, ["Active", 11, 0]);
+  assert.match(built.sql, /LIMIT 11 OFFSET 0/);
+  assert.deepEqual(built.params, ["Active"]);
   assert.deepEqual(built.pagination, {
     limit: 10,
     offset: 0,
@@ -52,6 +53,7 @@ test("builds active listing search with all supported filters in param order", (
   assert.match(built.sql, /PoolPrivateYN = \?/);
   assert.match(built.sql, /ViewYN = \?/);
   assert.match(built.sql, /AssociationFee <= \?/);
+  assert.match(built.sql, /LIMIT 6 OFFSET 5/);
   assert.equal(built.sql.includes(injectedCity), false);
   assert.deepEqual(built.params, [
     "Active",
@@ -63,9 +65,7 @@ test("builds active listing search with all supported filters in param order", (
     "Condominium",
     "True",
     "True",
-    500,
-    6,
-    5
+    500
   ]);
 });
 
@@ -78,8 +78,9 @@ test("builds sold comps query with city, months, residential constraint, and pag
   assert.match(built.sql, /CloseDate >= DATE_SUB\(CURDATE\(\), INTERVAL \? MONTH\)/);
   assert.match(built.sql, /PropertyType = \?/);
   assert.match(built.sql, /ORDER BY CloseDate DESC/);
+  assert.match(built.sql, /LIMIT 21 OFFSET 40/);
   assert.equal(built.sql.includes(city), false);
-  assert.deepEqual(built.params, [city, 6, "Residential", 21, 40]);
+  assert.deepEqual(built.params, [city, 6, "Residential"]);
   assert.deepEqual(built.criteria, {
     city,
     months: 6,

@@ -68,6 +68,10 @@ test("classifies single and mixed Week 9 intents", () => {
   assert.equal(classifyIntent("Find homes in Irvine under $1M."), "search");
   assert.equal(classifyIntent("Are prices rising in the Pasadena market?"), "market");
   assert.equal(classifyIntent("Recommend similar listings."), "recommend");
+  assert.equal(
+    classifyIntent("Show me something similar with natural light, a modern kitchen, and walkable neighborhood feel."),
+    "semantic"
+  );
   assert.equal(classifyIntent("What does DOM mean?"), "knowledge");
   assert.equal(classifyIntent("Draft an email summary for my client."), "email");
   assert.equal(classifyIntent("SEND EMAIL draft_abc123"), "email");
@@ -76,6 +80,25 @@ test("classifies single and mixed Week 9 intents", () => {
     "mixed"
   );
   assert.equal(classifyIntent("hello there"), "unknown");
+});
+
+test("routes semantic description searches to the semantic search agent", async () => {
+  const calls = [];
+  const output = await orchestrate(
+    "Show me something similar with natural light, a modern kitchen, and walkable neighborhood feel.",
+    "semantic-user",
+    {
+      semanticSearchAgent: stubAgent("semanticSearchAgent", "semantic reply", calls)
+    }
+  );
+
+  assert.equal(output.intent, "semantic");
+  assert.equal(output.response, "semantic reply");
+  assert.deepEqual(calls, [{
+    agent: "semanticSearchAgent",
+    query: "Show me something similar with natural light, a modern kitchen, and walkable neighborhood feel.",
+    userId: "semantic-user"
+  }]);
 });
 
 test("requires exact uppercase email approval commands", () => {

@@ -73,11 +73,13 @@ test("builds recommendation rows query with parameterized target listing and mod
   const built = buildRecommendationRowsQuery(listingId, "test-model");
 
   assert.match(built.sql, /FROM rets_property r/);
+  assert.match(built.sql, /r\.L_ListingID AS ListingID/);
   assert.match(built.sql, /INNER JOIN rets_property_embeddings e/);
-  assert.match(built.sql, /CAST\(r\.ListingID AS CHAR\) = \?/);
+  assert.match(built.sql, /CAST\(r\.L_ListingID AS CHAR CHARACTER SET utf8mb4\) COLLATE utf8mb4_unicode_ci = CAST\(\? AS CHAR CHARACTER SET utf8mb4\) COLLATE utf8mb4_unicode_ci/);
+  assert.match(built.sql, /CAST\(r\.L_ListingID AS CHAR CHARACTER SET utf8mb4\) COLLATE utf8mb4_unicode_ci = e\.ListingID COLLATE utf8mb4_unicode_ci/);
   assert.match(built.sql, /r\.L_Status = \?/);
   assert.match(built.sql, /e\.embedding_model = \?/);
-  assert.match(built.sql, /CAST\(r\.ListingID AS CHAR\) <> \?/);
+  assert.match(built.sql, /CAST\(r\.L_ListingID AS CHAR CHARACTER SET utf8mb4\) COLLATE utf8mb4_unicode_ci <> CAST\(\? AS CHAR CHARACTER SET utf8mb4\) COLLATE utf8mb4_unicode_ci/);
   assert.equal(built.sql.includes(listingId), false);
   assert.deepEqual(built.params, [
     listingId,

@@ -11,6 +11,7 @@ import {
   normalizeRagTopK,
   retrieveRagChunks
 } from "../src/ragAssistant.ts";
+import { getDefaultRagIndex, loadDefaultRagDocuments } from "../src/index.ts";
 
 function vectorForText(text) {
   const lower = text.toLowerCase();
@@ -199,4 +200,22 @@ test("builds a grounded answer prompt that restricts answers to source context",
   assert.match(prompt, /using only the source context/);
   assert.match(prompt, /not enough indexed source context/);
   assert.match(prompt, /Question: What does DOM mean\?/);
+});
+
+test("loads default RAG reference documents and builds a project index with injected embeddings", async () => {
+  const defaultDocs = await loadDefaultRagDocuments();
+  const sources = defaultDocs.map((doc) => doc.source);
+
+  assert.equal(defaultDocs.length >= 3, true);
+  assert.equal(sources.includes("docs/reference/mls-column-mapping.md"), true);
+  assert.equal(sources.includes("docs/reference/real-estate-glossary.md"), true);
+  assert.equal(sources.includes("docs/reference/week5-market-summaries.md"), true);
+
+  const index = await getDefaultRagIndex({
+    embeddingProvider: async (text) => vectorForText(text),
+    model: "test-embedding-model"
+  });
+
+  assert.equal(index.length > defaultDocs.length, true);
+  assert.equal(index.every((chunk) => chunk.model === "test-embedding-model"), true);
 });

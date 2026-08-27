@@ -89,13 +89,17 @@ test("builds semantic search SQL around active listings and cache table", () => 
 
   const sourceQuery = buildActiveListingEmbeddingSourceQuery("test-model", 25);
   assert.match(sourceQuery.sql, /FROM rets_property r/);
+  assert.match(sourceQuery.sql, /r\.L_ListingID AS ListingID/);
   assert.match(sourceQuery.sql, /LEFT JOIN rets_property_embeddings e/);
+  assert.match(sourceQuery.sql, /CAST\(r\.L_ListingID AS CHAR CHARACTER SET utf8mb4\) COLLATE utf8mb4_unicode_ci = e\.ListingID COLLATE utf8mb4_unicode_ci/);
   assert.match(sourceQuery.sql, /r\.L_Status = \?/);
-  assert.match(sourceQuery.sql, /LIMIT \?/);
-  assert.deepEqual(sourceQuery.params, ["test-model", "Active", 25]);
+  assert.match(sourceQuery.sql, /LIMIT 25/);
+  assert.deepEqual(sourceQuery.params, ["test-model", "Active"]);
 
   const cacheQuery = buildSemanticListingCacheQuery("test-model");
+  assert.match(cacheQuery.sql, /r\.L_ListingID AS ListingID/);
   assert.match(cacheQuery.sql, /INNER JOIN rets_property_embeddings e/);
+  assert.match(cacheQuery.sql, /CAST\(r\.L_ListingID AS CHAR CHARACTER SET utf8mb4\) COLLATE utf8mb4_unicode_ci = e\.ListingID COLLATE utf8mb4_unicode_ci/);
   assert.match(cacheQuery.sql, /r\.L_Status = \?/);
   assert.match(cacheQuery.sql, /e\.embedding_model = \?/);
   assert.deepEqual(cacheQuery.params, ["Active", "test-model"]);

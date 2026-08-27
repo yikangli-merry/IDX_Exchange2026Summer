@@ -3,7 +3,8 @@ import { formatActiveListingRow, type ActiveListing } from "./mlsQueries.ts";
 import {
   cosineSimilarity,
   defaultEmbeddingModel,
-  parseEmbedding
+  parseEmbedding,
+  RETS_LISTING_ID_SQL
 } from "./semanticSearch.ts";
 
 type RawRow = Record<string, unknown>;
@@ -150,7 +151,7 @@ function rowRole(row: RawRow): string | null {
 }
 
 function rowListingId(row: RawRow): string {
-  return String(row.ListingID ?? row.listingId ?? "");
+  return String(row.ListingID ?? row.L_ListingID ?? row.listingId ?? "");
 }
 
 function rowEmbedding(row: RawRow): number[] | null {
@@ -192,7 +193,7 @@ export function buildRecommendationRowsQuery(
     sql: `
       SELECT
         'target' AS recommendation_role,
-        r.ListingID, r.L_DisplayId, r.L_Address, r.L_City, r.L_Zip,
+        r.L_ListingID AS ListingID, r.L_DisplayId, r.L_Address, r.L_City, r.L_Zip,
         r.L_SystemPrice AS price, r.L_Keyword2 AS beds, r.LM_Dec_3 AS baths,
         r.LM_Int2_3 AS sqft, r.L_Type_ AS type, r.L_Status AS status,
         r.LMD_MP_Latitude AS lat, r.LMD_MP_Longitude AS lng,
@@ -202,14 +203,14 @@ export function buildRecommendationRowsQuery(
         e.embedding, e.embedding_model, e.content_hash
       FROM rets_property r
       INNER JOIN rets_property_embeddings e
-        ON CAST(r.ListingID AS CHAR) = e.ListingID
-      WHERE CAST(r.ListingID AS CHAR) = ?
+        ON ${RETS_LISTING_ID_SQL} = e.ListingID COLLATE utf8mb4_unicode_ci
+      WHERE ${RETS_LISTING_ID_SQL} = CAST(? AS CHAR CHARACTER SET utf8mb4) COLLATE utf8mb4_unicode_ci
         AND r.L_Status = ?
         AND e.embedding_model = ?
       UNION ALL
       SELECT
         'candidate' AS recommendation_role,
-        r.ListingID, r.L_DisplayId, r.L_Address, r.L_City, r.L_Zip,
+        r.L_ListingID AS ListingID, r.L_DisplayId, r.L_Address, r.L_City, r.L_Zip,
         r.L_SystemPrice AS price, r.L_Keyword2 AS beds, r.LM_Dec_3 AS baths,
         r.LM_Int2_3 AS sqft, r.L_Type_ AS type, r.L_Status AS status,
         r.LMD_MP_Latitude AS lat, r.LMD_MP_Longitude AS lng,
@@ -219,10 +220,10 @@ export function buildRecommendationRowsQuery(
         e.embedding, e.embedding_model, e.content_hash
       FROM rets_property r
       INNER JOIN rets_property_embeddings e
-        ON CAST(r.ListingID AS CHAR) = e.ListingID
+        ON ${RETS_LISTING_ID_SQL} = e.ListingID COLLATE utf8mb4_unicode_ci
       WHERE r.L_Status = ?
         AND e.embedding_model = ?
-        AND CAST(r.ListingID AS CHAR) <> ?
+        AND ${RETS_LISTING_ID_SQL} <> CAST(? AS CHAR CHARACTER SET utf8mb4) COLLATE utf8mb4_unicode_ci
       ORDER BY ListingID ASC
     `.trim()
   };

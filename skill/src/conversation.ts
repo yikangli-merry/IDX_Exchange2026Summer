@@ -77,11 +77,8 @@ function nextQuestion(session: UserSession): ConversationOutput["askedFor"] | nu
   if (!session.maxPrice) {
     return "maxPrice";
   }
-  if (!session.type) {
+  if (!session.type && !session.beds && !session.baths && !session.pool) {
     return "type";
-  }
-  if (!session.beds) {
-    return "beds";
   }
 
   return null;

@@ -8,7 +8,7 @@ This document explains how the final assistant uses the two main MLS-backed tabl
 
 | Field | Project usage | Notes |
 |---|---|---|
-| `L_ListingID` | Listing identifier | Used to identify target listings and recommendation candidates. |
+| `L_ListingID` | Listing identifier | Physical MLS id column. Query builders alias it as `ListingID` for agent-facing rows. |
 | `L_Status` | Active listing filter | Active search should filter to `Active` records. |
 | `L_Address` | Display address | Used in WhatsApp listing summaries and email drafts. |
 | `L_City` | City filter and display value | Used for search filters, recommendation matching, and market context. |
@@ -21,6 +21,22 @@ This document explains how the final assistant uses the two main MLS-backed tabl
 | `ViewYN` | View flag | Used for natural language view preferences. |
 | `AssociationFee` | HOA amount | Used for maximum HOA filters. |
 | `L_Remarks` | Listing description | Used as the main semantic search text source. |
+
+## `rets_property_embeddings`
+
+`rets_property_embeddings` is the local embedding cache for active listing semantic search and hybrid recommendations. It can be created and refreshed from `skill/` with:
+
+```powershell
+npm.cmd run embeddings:generate
+```
+
+| Field | Project usage | Notes |
+|---|---|---|
+| `ListingID` | Cache key for active listing embeddings | Matches `rets_property.L_ListingID` after string conversion. |
+| `embedding` | OpenAI embedding vector | Stored as JSON and parsed before cosine similarity scoring. |
+| `embedding_model` | Embedding model name | Defaults to `text-embedding-3-small` unless overridden by `OPENAI_EMBEDDING_MODEL`. |
+| `content_hash` | Listing text freshness check | Regenerated when the listing embedding text changes. |
+| `updated_at` | Cache refresh timestamp | Maintained by MySQL on insert or update. |
 
 ## `california_sold`
 
@@ -58,6 +74,6 @@ This document explains how the final assistant uses the two main MLS-backed tabl
 
 - Do not commit raw MLS exports, database dumps, credentials, or `.env` files.
 - Use aggregated `california_sold` results for market reports instead of exposing full sold-detail rows.
+- Keep `rets_property_embeddings` as generated local state; do not commit embedding cache exports.
 - Keep WhatsApp responses concise and limited to the most relevant listings.
 - Use approval-gated email drafts so generated content can be reviewed before sending.
-

@@ -102,12 +102,25 @@ function toTitleCase(value: string): string {
     .join(" ");
 }
 
+function stripQuestionIntro(message: string): string {
+  return message
+    .trim()
+    .replace(/^(?:how\s+(?:is|are)|what(?:'s| is)|tell me about|show me|give me|summarize|analyze)\s+(?:the\s+)?/i, "");
+}
+
 export function extractMarketCity(message: string): string | null {
   const prepositionMatch = message.match(
-    /\b(?:in|for|near|around|about)\s+([A-Za-z]+(?:[\s-]+[A-Za-z]+){0,4})(?=\s*(?:[?.,!]|$|\b(?:over|during|last|past|market|trend|trends|price|prices|now|today|this|by|with|from)\b))/i
+    /\b(?:in|for|near|around|about)\s+([A-Za-z]+(?:[\s-]+[A-Za-z]+){0,4})(?=\s*(?:[?.,!]|$|\b(?:under|below|less|over|during|last|past|market|trend|trends|price|prices|now|today|this|by|with|from)\b))/i
   );
   if (prepositionMatch) {
     return toTitleCase(prepositionMatch[1]);
+  }
+
+  const marketSubjectMatch = stripQuestionIntro(message).match(
+    /^([A-Za-z]+(?:[\s-]+[A-Za-z]+){0,4}?)\s+(?:housing\s+)?market\b/i
+  );
+  if (marketSubjectMatch) {
+    return toTitleCase(marketSubjectMatch[1]);
   }
 
   const leadingCityMatch = message.match(

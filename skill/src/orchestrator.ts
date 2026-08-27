@@ -21,10 +21,15 @@ import {
   type RagAnswerOptions,
   type RagAnswerOutput
 } from "./ragAssistant.ts";
+import {
+  findSimilarListings,
+  type FindSimilarListingsOptions,
+  type SemanticListingResult
+} from "./semanticSearch.ts";
 import { getSession, updateSession, type UserSession } from "./session.ts";
 
-export type OrchestrationIntent = "email" | "knowledge" | "market" | "mixed" | "recommend" | "search" | "unknown";
-export type AgentName = "emailDraftAgent" | "marketStatsAgent" | "propertySearchAgent" | "ragAgent" | "recommendationAgent";
+export type OrchestrationIntent = "email" | "knowledge" | "market" | "mixed" | "recommend" | "search" | "semantic" | "unknown";
+export type AgentName = "emailDraftAgent" | "marketStatsAgent" | "propertySearchAgent" | "ragAgent" | "recommendationAgent" | "semanticSearchAgent";
 export type ApprovedEmailSender = (draft: PendingEmailDraft, confirmation: string) => Promise<EmailSendResult>;
 
 export interface AgentInvocationInput {
@@ -57,6 +62,9 @@ export interface OrchestratorOptions {
   recommendationAgent?: AgentHandler<ListingRecommendation[]>;
   recommendationOptions?: RecommendSimilarListingsOptions;
   recommendationTopK?: number;
+  semanticSearchAgent?: AgentHandler<SemanticListingResult[]>;
+  semanticSearchOptions?: FindSimilarListingsOptions;
+  semanticSearchTopK?: number;
 }
 
 export interface OrchestrationOutput {
@@ -72,7 +80,8 @@ const AGENT_LABELS: Record<AgentName, string> = {
   marketStatsAgent: "Market stats",
   propertySearchAgent: "Property search",
   ragAgent: "Knowledge",
-  recommendationAgent: "Recommendations"
+  recommendationAgent: "Recommendations",
+  semanticSearchAgent: "Semantic search"
 };
 
 function hasPattern(query: string, patterns: RegExp[]): boolean {
@@ -116,6 +125,15 @@ export function classifyIntent(query: string): OrchestrationIntent {
 
   if (wantsSearch && wantsMarket) {
     return "mixed";
+  }
+
+  const wantsSemantic = hasPattern(normalized, [
+    /\b(?:semantic|similarity|description|remarks|vibe|feel)\b/i,
+    /\b(?:natural light|modern kitchen|walkable|charming|craftsman|mountain views?|ocean views?|open floor plan|renovated|character)\b/i,
+    /\b(?:show|find|search|looking for)\b.*\b(?:something|place|home|house|property|listing)s?\b.*\b(?:with|that feels?|vibe|feel)\b/i
+  ]);
+  if (wantsSemantic) {
+    return "semantic";
   }
 
   const wantsRecommendation = hasPattern(normalized, [
@@ -228,6 +246,52 @@ async function runRagAgent(
   };
 }
 
+function formatCurrency(value: number | null): string {
+  if (value === null) {
+    return "unavailable";
+  }
+
+  return new Intl.NumberFormat("en-US", {
+    currency: "USD",
+    maximumFractionDigits: 0,
+    style: "currency"
+  }).format(value);
+}
+
+function formatSemanticSearchReply(results: SemanticListingResult[]): string {
+  if (results.length === 0) {
+    return "I could not find active listings with cached embeddings for that description yet.";
+  }
+
+  const lines = [`Top ${results.length} semantically similar active listing(s):`];
+  for (const result of results) {
+    const location = [result.address, result.city].filter(Boolean).join(", ") || "Address unavailable";
+    const score = Math.round(result.similarityScore * 1000) / 10;
+    lines.push(
+      `${result.rank}. ${location} - ${formatCurrency(result.price)} - ${score}% semantic match`
+    );
+  }
+  return lines.join("\n");
+}
+
+async function runSemanticSearchAgent(
+  input: AgentInvocationInput,
+  options: OrchestratorOptions
+): Promise<AgentInvocationResult<SemanticListingResult[]>> {
+  const results = await findSimilarListings(
+    input.query,
+    options.semanticSearchTopK,
+    options.semanticSearchOptions
+  );
+  updateSession(input.userId, { lastResults: results });
+
+  return {
+    agent: "semanticSearchAgent",
+    data: results,
+    response: formatSemanticSearchReply(results)
+  };
+}
+
 async function runEmailDraftAgent(
   input: AgentInvocationInput,
   options: OrchestratorOptions
@@ -293,6 +357,9 @@ async function invokeAgent(
   if (agent === "ragAgent") {
     return options.ragAgent?.(input) ?? runRagAgent(input, options);
   }
+  if (agent === "semanticSearchAgent") {
+    return options.semanticSearchAgent?.(input) ?? runSemanticSearchAgent(input, options);
+  }
 
   return options.emailDraftAgent?.(input) ?? runEmailDraftAgent(input, options);
 }
@@ -328,7 +395,7 @@ export async function orchestrate(
       agentResults: [],
       intent,
       query: trimmedQuery,
-      response: "I'm not sure how to help with that. Try asking about properties, market trends, recommendations, real estate terms, or email drafts.",
+      response: "I'm not sure how to help with that. Try asking about properties, semantic searches, market trends, recommendations, real estate terms, or email drafts.",
       userId
     };
   }
@@ -353,7 +420,8 @@ export async function orchestrate(
     knowledge: "ragAgent",
     market: "marketStatsAgent",
     recommend: "recommendationAgent",
-    search: "propertySearchAgent"
+    search: "propertySearchAgent",
+    semantic: "semanticSearchAgent"
   };
   const result = await invokeAgent(agentByIntent[intent], input, options);
 

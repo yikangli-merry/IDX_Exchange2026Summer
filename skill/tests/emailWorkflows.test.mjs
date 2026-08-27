@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   buildListingAlertQuery,
   buildMarketReportRowsQuery,
+  buildPropertySummaryListingQuery,
   createEmailWorkflowDraft,
   draftListingAlertEmail,
   draftMarketReportEmail,
@@ -77,9 +78,11 @@ test("builds listing alert queries with a hard five-row result limit", () => {
   const built = buildListingAlertQuery({ city: "Irvine", maxPrice: 1200000 }, 99);
 
   assert.match(built.sql, /FROM rets_property/);
-  assert.match(built.sql, /LIMIT \?/);
+  assert.match(built.sql, /L_ListingID AS ListingID/);
+  assert.match(built.sql, /ORDER BY COALESCE\(DaysOnMarket, 999999\) ASC, L_ListingID DESC/);
+  assert.match(built.sql, /LIMIT 5/);
   assert.equal(built.criteria.limit, 5);
-  assert.deepEqual(built.params, ["Active", "Irvine", 1200000, 5]);
+  assert.deepEqual(built.params, ["Active", "Irvine", 1200000]);
 });
 
 test("builds market report queries from aggregated california_sold analytics under fifty rows", () => {
@@ -89,6 +92,16 @@ test("builds market report queries from aggregated california_sold analytics und
   assert.match(built.sql, /GROUP BY DATE_FORMAT\(CloseDate, '%Y-%m'\)/);
   assert.equal(built.criteria.limit < 50, true);
   assert.deepEqual(built.params, ["Pasadena", "Residential", 12]);
+});
+
+test("builds property summary queries with the live RETS listing id column", () => {
+  const built = buildPropertySummaryListingQuery("L123");
+
+  assert.match(built.sql, /L_ListingID AS ListingID/);
+  assert.match(built.sql, /CAST\(L_ListingID AS CHAR\) = \?/);
+  assert.match(built.sql, /LIMIT 1/);
+  assert.equal(built.sql.includes("L123"), false);
+  assert.deepEqual(built.params, ["L123", "Active"]);
 });
 
 test("drafts a pending listing alert email and limits listing details to five", async () => {

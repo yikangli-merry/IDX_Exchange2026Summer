@@ -752,11 +752,20 @@ Week 12 focused on packaging the IDX Multi-Agent Real Estate Assistant into a de
 - Multi-turn conversational memory for search refinement
 - City-level market analytics and trends using `california_sold`
 - Comp-supported price and recommendation workflows
-- Semantic similarity search over active listing remarks
-- RAG assistant for MLS fields, real estate terms, and market concepts
-- Multi-agent orchestration across search, market, recommendation, RAG, and email agents
+- Semantic similarity search over active listing remarks through `semanticSearchAgent`
+- RAG assistant for MLS fields, real estate terms, and market concepts using default `docs/reference/*.md` sources
+- Multi-agent orchestration across search, market, semantic, recommendation, RAG, and email agents
 - WhatsApp-ready response formatting
 - Email draft workflows with strict human approval before sending
+
+### Demo Readiness Notes
+
+- Real `rets_property` queries use the physical MLS id column `L_ListingID` and expose it to agents as `ListingID`.
+- Semantic search and recommendation workflows rely on the `rets_property_embeddings` cache table.
+- The embedding cache is prepared with `npm.cmd run embeddings:generate` from `skill/`.
+- The embedding generation command requires a real `OPENAI_API_KEY`, MySQL access, and the active `rets_property` table.
+- Knowledge questions routed through `run({ query })` automatically build a RAG index from `docs/reference/*.md`.
+- Email workflows always create drafts first. Only the exact `SEND EMAIL <draftId>` command can send an approved draft.
 
 ### Final Deliverables
 
@@ -775,4 +784,7 @@ Run from the skill package:
 cd skill
 npm.cmd test
 npm.cmd run check
+npm.cmd run embeddings:generate
 ```
+
+The test and check commands run without live MySQL, OpenAI, WhatsApp, or email services. The embedding command is a live setup step and will fail if `.env` still contains placeholder credentials.

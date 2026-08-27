@@ -7,6 +7,7 @@ export const DEFAULT_EMBEDDING_MODEL = "text-embedding-3-small";
 export const DEFAULT_SEMANTIC_TOP_K = 5;
 export const MAX_SEMANTIC_TOP_K = 50;
 export const MAX_EMBEDDING_TEXT_CHARS = 8000;
+export const RETS_LISTING_ID_SQL = "CAST(r.L_ListingID AS CHAR CHARACTER SET utf8mb4) COLLATE utf8mb4_unicode_ci";
 
 type RawRow = Record<string, unknown>;
 
@@ -250,7 +251,7 @@ export async function getEmbedding(
 export function buildCreateListingEmbeddingsTableQuery(): string {
   return `
     CREATE TABLE IF NOT EXISTS rets_property_embeddings (
-      ListingID VARCHAR(64) NOT NULL PRIMARY KEY,
+      ListingID VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL PRIMARY KEY,
       embedding JSON NOT NULL,
       embedding_model VARCHAR(100) NOT NULL,
       content_hash CHAR(64) NOT NULL,
@@ -266,17 +267,13 @@ export function buildActiveListingEmbeddingSourceQuery(
   limit?: number
 ): SemanticBuiltQuery {
   const params: unknown[] = [model, "Active"];
-  const limitClause = limit === undefined ? "" : "LIMIT ?";
-
-  if (limit !== undefined) {
-    params.push(normalizePositiveInteger(limit, 100));
-  }
+  const limitClause = limit === undefined ? "" : `LIMIT ${normalizePositiveInteger(limit, 100)}`;
 
   return {
     params,
     sql: `
       SELECT
-        r.ListingID, r.L_DisplayId, r.L_Address, r.L_City, r.L_Zip,
+        r.L_ListingID AS ListingID, r.L_DisplayId, r.L_Address, r.L_City, r.L_Zip,
         r.L_SystemPrice AS price, r.L_Keyword2 AS beds, r.LM_Dec_3 AS baths,
         r.LM_Int2_3 AS sqft, r.L_Type_ AS type, r.L_Status AS status,
         r.LMD_MP_Latitude AS lat, r.LMD_MP_Longitude AS lng,
@@ -288,10 +285,10 @@ export function buildActiveListingEmbeddingSourceQuery(
         e.content_hash AS cached_content_hash
       FROM rets_property r
       LEFT JOIN rets_property_embeddings e
-        ON CAST(r.ListingID AS CHAR) = e.ListingID
+        ON ${RETS_LISTING_ID_SQL} = e.ListingID COLLATE utf8mb4_unicode_ci
         AND e.embedding_model = ?
       WHERE r.L_Status = ?
-      ORDER BY r.ListingID ASC
+      ORDER BY r.L_ListingID ASC
       ${limitClause}
     `.trim()
   };
@@ -302,7 +299,7 @@ export function buildSemanticListingCacheQuery(model = defaultEmbeddingModel()):
     params: ["Active", model],
     sql: `
       SELECT
-        r.ListingID, r.L_DisplayId, r.L_Address, r.L_City, r.L_Zip,
+        r.L_ListingID AS ListingID, r.L_DisplayId, r.L_Address, r.L_City, r.L_Zip,
         r.L_SystemPrice AS price, r.L_Keyword2 AS beds, r.LM_Dec_3 AS baths,
         r.LM_Int2_3 AS sqft, r.L_Type_ AS type, r.L_Status AS status,
         r.LMD_MP_Latitude AS lat, r.LMD_MP_Longitude AS lng,
@@ -312,10 +309,10 @@ export function buildSemanticListingCacheQuery(model = defaultEmbeddingModel()):
         e.embedding, e.embedding_model, e.content_hash
       FROM rets_property r
       INNER JOIN rets_property_embeddings e
-        ON CAST(r.ListingID AS CHAR) = e.ListingID
+        ON ${RETS_LISTING_ID_SQL} = e.ListingID COLLATE utf8mb4_unicode_ci
       WHERE r.L_Status = ?
         AND e.embedding_model = ?
-      ORDER BY r.ListingID ASC
+      ORDER BY r.L_ListingID ASC
     `.trim()
   };
 }
@@ -351,7 +348,7 @@ async function saveListingEmbedding(record: ListingEmbeddingRecord): Promise<voi
 }
 
 function listingId(row: RawRow): string | null {
-  return stringValue(firstValue(row, ["ListingID", "listingId"]));
+  return stringValue(firstValue(row, ["ListingID", "L_ListingID", "listingId"]));
 }
 
 function hasCurrentCachedEmbedding(row: RawRow, hash: string, model: string): boolean {

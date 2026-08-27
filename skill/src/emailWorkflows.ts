@@ -219,20 +219,19 @@ export function buildListingAlertQuery(filters: ActiveListingFilters = {}, limit
     where.push("AssociationFee <= ?");
   }
 
-  params.push(safeLimit);
   return {
     criteria,
     params,
     sql: `
       SELECT
-        ListingID, L_DisplayId, L_Address, L_City,
+        L_ListingID AS ListingID, L_DisplayId, L_Address, L_City,
         L_SystemPrice AS price, L_Keyword2 AS beds, LM_Dec_3 AS baths,
         LM_Int2_3 AS sqft, L_Type_ AS type, L_Status AS status,
         DaysOnMarket, PhotoCount
       FROM rets_property
       WHERE ${where.join(" AND ")}
-      ORDER BY COALESCE(DaysOnMarket, 999999) ASC, ListingID DESC
-      LIMIT ?
+      ORDER BY COALESCE(DaysOnMarket, 999999) ASC, L_ListingID DESC
+      LIMIT ${safeLimit}
     `.trim()
   };
 }
@@ -284,18 +283,18 @@ export function buildPropertySummaryListingQuery(listingId: string | number): Em
       limit: 1,
       status: "Active"
     },
-    params: [safeListingId, "Active", 1],
+    params: [safeListingId, "Active"],
     sql: `
       SELECT
-        ListingID, L_DisplayId, L_Address, L_City, L_Zip,
+        L_ListingID AS ListingID, L_DisplayId, L_Address, L_City, L_Zip,
         L_SystemPrice AS price, L_Keyword2 AS beds, LM_Dec_3 AS baths,
         LM_Int2_3 AS sqft, L_Type_ AS type, L_Status AS status,
         YearBuilt, AssociationFee, DaysOnMarket,
         PoolPrivateYN, ViewYN, FireplaceYN, PhotoCount
       FROM rets_property
-      WHERE CAST(ListingID AS CHAR) = ?
+      WHERE CAST(L_ListingID AS CHAR) = ?
         AND L_Status = ?
-      LIMIT ?
+      LIMIT 1
     `.trim()
   };
 }
