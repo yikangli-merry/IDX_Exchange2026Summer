@@ -21,7 +21,7 @@ Do not answer these requests by writing a normal email yourself. The project has
 Run this local command from any working directory, replacing the message text exactly:
 
 ```powershell
-node "D:\2026年\intern\IDX_Exchange\openclaw-main\_project\skill\scripts\emailBridge.mjs" --user "whatsapp-demo" --message "<exact WhatsApp message>"
+node "D:\idx_exchange\openclaw-main\_project\skill\scripts\emailBridge.mjs" --user "whatsapp-demo" --message "<exact WhatsApp message>"
 ```
 
 Return the command output to the WhatsApp user.
