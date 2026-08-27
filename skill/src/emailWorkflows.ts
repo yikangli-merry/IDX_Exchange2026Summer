@@ -251,7 +251,7 @@ export function buildMarketReportRowsQuery(city: string, months = DEFAULT_MARKET
       months: safeMonths,
       propertyType: RESIDENTIAL_PROPERTY_TYPE
     },
-    params: [safeCity, RESIDENTIAL_PROPERTY_TYPE, safeMonths, MAX_MARKET_REPORT_ROWS],
+    params: [safeCity, RESIDENTIAL_PROPERTY_TYPE, safeMonths],
     sql: `
       SELECT
         DATE_FORMAT(CloseDate, '%Y-%m') AS period,
@@ -267,7 +267,7 @@ export function buildMarketReportRowsQuery(city: string, months = DEFAULT_MARKET
         AND ClosePrice IS NOT NULL
       GROUP BY DATE_FORMAT(CloseDate, '%Y-%m')
       ORDER BY period DESC
-      LIMIT ?
+      LIMIT ${MAX_MARKET_REPORT_ROWS}
     `.trim()
   };
 }

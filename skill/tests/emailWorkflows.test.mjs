@@ -88,7 +88,7 @@ test("builds market report queries from aggregated california_sold analytics und
   assert.match(built.sql, /FROM california_sold/);
   assert.match(built.sql, /GROUP BY DATE_FORMAT\(CloseDate, '%Y-%m'\)/);
   assert.equal(built.criteria.limit < 50, true);
-  assert.deepEqual(built.params, ["Pasadena", "Residential", 12, 12]);
+  assert.deepEqual(built.params, ["Pasadena", "Residential", 12]);
 });
 
 test("drafts a pending listing alert email and limits listing details to five", async () => {

@@ -2,14 +2,12 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { draftEmail } from "../src/emailDraftAgent.ts";
-import { isEmailApprovalCommand } from "../src/orchestrator.ts";
-import { sendApprovedEmail } from "../src/emailApproval.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(__dirname, "..", "..");
 const stateDir = path.join(process.env.USERPROFILE ?? projectRoot, ".openclaw", "idx-exchange-email-bridge");
 const draftsPath = path.join(stateDir, "drafts.json");
+let draftEmail;
 
 function parseArgs(argv) {
   const args = {
@@ -61,9 +59,7 @@ async function loadProjectEnv() {
       continue;
     }
     const [key, value] = entry;
-    if (!process.env[key]) {
-      process.env[key] = value;
-    }
+    process.env[key] = value;
   }
 }
 
@@ -129,28 +125,44 @@ async function main() {
   }
 
   await loadProjectEnv();
+  const [
+    { draftEmail: loadedDraftEmail },
+    { sendApprovedEmail },
+    { closePool },
+    { isEmailApprovalCommand }
+  ] = await Promise.all([
+    import("../src/emailDraftAgent.ts"),
+    import("../src/emailApproval.ts"),
+    import("../src/db.ts"),
+    import("../src/orchestrator.ts")
+  ]);
+  draftEmail = loadedDraftEmail;
 
-  if (isEmailApprovalCommand(message)) {
-    const { draft, state } = await getPendingDraft(args.user);
-    if (!draft) {
-      printResult("There is no pending IDX email draft to send. Draft an email first.");
+  try {
+    if (isEmailApprovalCommand(message)) {
+      const { draft, state } = await getPendingDraft(args.user);
+      if (!draft) {
+        printResult("There is no pending IDX email draft to send. Draft an email first.");
+        return;
+      }
+
+      const result = await sendApprovedEmail(draft, message);
+      if (result.sent) {
+        await clearPendingDraft(args.user, state);
+      }
+      printResult(result.response);
       return;
     }
 
-    const result = await sendApprovedEmail(draft, message);
-    if (result.sent) {
-      await clearPendingDraft(args.user, state);
+    const output = await draftWithDatabaseFallback(message);
+    if (output.draft) {
+      await savePendingDraft(args.user, output.draft);
     }
-    printResult(result.response);
-    return;
-  }
 
-  const output = await draftWithDatabaseFallback(message);
-  if (output.draft) {
-    await savePendingDraft(args.user, output.draft);
+    printResult(output.response);
+  } finally {
+    await closePool();
   }
-
-  printResult(output.response);
 }
 
 main().catch((error) => {
