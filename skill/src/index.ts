@@ -241,6 +241,7 @@ export type {
   EmbeddingProvider,
   FindSimilarListingsOptions,
   GenerateListingEmbeddingsOptions,
+  ListingEmbeddingGenerationProgress,
   ListingEmbeddingGenerationSummary,
   ListingEmbeddingRecord,
   SemanticListingResult

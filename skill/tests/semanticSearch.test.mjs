@@ -191,6 +191,7 @@ test("generates only missing or stale listing embeddings when source rows are in
   };
 
   const providerCalls = [];
+  const progressEvents = [];
   const saved = [];
   const summary = await generateListingEmbeddings(undefined, {
     embeddingProvider: async (text, model) => {
@@ -199,6 +200,9 @@ test("generates only missing or stale listing embeddings when source rows are in
     },
     ensureTable: false,
     model: "test-model",
+    onProgress: (progress) => {
+      progressEvents.push(progress);
+    },
     saveEmbedding: async (record) => {
       saved.push(record);
     },
@@ -215,4 +219,12 @@ test("generates only missing or stale listing embeddings when source rows are in
   assert.equal(saved.length, 1);
   assert.equal(saved[0].listingId, "STALE");
   assert.deepEqual(saved[0].embedding, [0.4, 0.6]);
+  assert.deepEqual(
+    progressEvents.map(({ generated, processed, skipped, total }) => ({ generated, processed, skipped, total })),
+    [
+      { generated: 0, processed: 0, skipped: 0, total: 2 },
+      { generated: 0, processed: 1, skipped: 1, total: 2 },
+      { generated: 1, processed: 2, skipped: 1, total: 2 }
+    ]
+  );
 });

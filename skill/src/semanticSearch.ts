@@ -34,6 +34,14 @@ export interface ListingEmbeddingGenerationSummary {
   skipped: number;
 }
 
+export interface ListingEmbeddingGenerationProgress {
+  generated: number;
+  listingId?: string;
+  processed: number;
+  skipped: number;
+  total: number;
+}
+
 export type EmbeddingProvider = (text: string, model: string) => Promise<number[]>;
 
 export interface FindSimilarListingsOptions {
@@ -46,6 +54,7 @@ export interface GenerateListingEmbeddingsOptions {
   embeddingProvider?: EmbeddingProvider;
   ensureTable?: boolean;
   model?: string;
+  onProgress?: (progress: ListingEmbeddingGenerationProgress) => void;
   saveEmbedding?: (record: ListingEmbeddingRecord) => Promise<void>;
   sourceRows?: RawRow[];
 }
@@ -381,6 +390,19 @@ export async function generateListingEmbeddings(
     scanned: rows.length,
     skipped: 0
   };
+  let processed = 0;
+
+  const emitProgress = (listingId?: string): void => {
+    options.onProgress?.({
+      generated: summary.generated,
+      listingId,
+      processed,
+      skipped: summary.skipped,
+      total: summary.scanned
+    });
+  };
+
+  emitProgress();
 
   for (const row of rows) {
     const id = listingId(row);
@@ -388,12 +410,16 @@ export async function generateListingEmbeddings(
 
     if (!id || !text) {
       summary.skipped += 1;
+      processed += 1;
+      emitProgress(id ?? undefined);
       continue;
     }
 
     const hash = contentHash(text);
     if (hasCurrentCachedEmbedding(row, hash, model)) {
       summary.skipped += 1;
+      processed += 1;
+      emitProgress(id);
       continue;
     }
 
@@ -405,6 +431,8 @@ export async function generateListingEmbeddings(
       model
     });
     summary.generated += 1;
+    processed += 1;
+    emitProgress(id);
   }
 
   return summary;

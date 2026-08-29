@@ -8,7 +8,8 @@ const projectRoot = path.resolve(__dirname, "..", "..");
 
 function parseArgs(argv) {
   const args = {
-    limit: undefined
+    limit: undefined,
+    progressInterval: 10
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -20,6 +21,14 @@ function parseArgs(argv) {
         throw new Error("--limit must be a positive integer.");
       }
       args.limit = limit;
+      index += 1;
+    } else if (arg === "--progress-interval") {
+      const rawInterval = argv[index + 1];
+      const progressInterval = Number(rawInterval);
+      if (!Number.isInteger(progressInterval) || progressInterval < 1) {
+        throw new Error("--progress-interval must be a positive integer.");
+      }
+      args.progressInterval = progressInterval;
       index += 1;
     }
   }
@@ -88,7 +97,25 @@ async function main() {
   ]);
 
   try {
-    const summary = await generateListingEmbeddings(args.limit);
+    let lastProgressAt = -1;
+    process.stderr.write(`Starting listing embedding generation${args.limit ? ` for up to ${args.limit} active listing(s)` : ""}...\n`);
+    const summary = await generateListingEmbeddings(args.limit, {
+      onProgress: (progress) => {
+        const shouldPrint =
+          progress.processed === 0 ||
+          progress.processed === progress.total ||
+          progress.processed - lastProgressAt >= args.progressInterval;
+        if (!shouldPrint) {
+          return;
+        }
+
+        lastProgressAt = progress.processed;
+        const listingSuffix = progress.listingId ? `; latest ${progress.listingId}` : "";
+        process.stderr.write(
+          `Embedding progress: ${progress.processed}/${progress.total}; generated ${progress.generated}; skipped ${progress.skipped}${listingSuffix}\n`
+        );
+      }
+    });
     const [cache] = await query(
       "SELECT COUNT(*) AS total, COUNT(DISTINCT embedding_model) AS models FROM rets_property_embeddings"
     );
