@@ -92,20 +92,6 @@ The goal is to create a rule-based natural language parser that acts as the fron
 - Detects pool and view requests
 - Extracts HOA limits such as `max HOA 500` and `HOA under 500`
 
-### Project Structure
-
-```text
-skill/
-  src/
-    parser.ts
-    index.ts
-  tests/
-    parser.test.mjs
-  package.json
-  package-lock.json
-  tsconfig.json
-```
-
 ## Week 3 - MLS MySQL Query Layer Integration
 
 This week focused on connecting the existing real-estate query parser to a real MLS-backed MySQL query layer. The goal was to move beyond parsing user messages into filters, and begin building the database access layer that downstream OpenClaw agents can use to search active listings and sold comparable properties.
@@ -160,27 +146,6 @@ The active listing query targets the `rets_property` table and always filters fo
 
 ```sql
 L_Status = "Active"
-```
-
-### Updated Project Structure
-
-```text
-docs/plan/
-  whatsapp-mls-architecture.md
-skill/
-  src/
-    db.ts
-    index.ts
-    mlsQueries.ts
-    parser.ts
-  tests/
-    mlsQueries.test.mjs
-    parser.test.mjs
-  package.json
-  package-lock.json
-  tsconfig.json
-.env.example
-.gitignore
 ```
 
 ## Week 4 - Conversational Property Search Agent
@@ -249,26 +214,6 @@ Expected result:
 - New Week 4 conversation/session tests pass.
 
 The unit tests do not require a live MySQL connection. A real database connection is only needed when running live MLS searches through the query functions.
-
-### Updated Project Structure
-
-```text
-skill/
-  src/
-    conversation.ts
-    db.ts
-    index.ts
-    mlsQueries.ts
-    parser.ts
-    session.ts
-  tests/
-    conversation.test.mjs
-    mlsQueries.test.mjs
-    parser.test.mjs
-  package.json
-  package-lock.json
-  tsconfig.json
-```
 
 ### Notes
 
@@ -354,28 +299,6 @@ Expected result:
 
 The unit tests do not require a live MySQL connection. A real database connection is only needed when running the market statistics agent against local MLS data.
 
-### Updated Project Structure
-
-```text
-skill/
-  src/
-    conversation.ts
-    db.ts
-    index.ts
-    marketStats.ts
-    mlsQueries.ts
-    parser.ts
-    session.ts
-  tests/
-    conversation.test.mjs
-    marketStats.test.mjs
-    mlsQueries.test.mjs
-    parser.test.mjs
-  package.json
-  package-lock.json
-  tsconfig.json
-```
-
 ### Notes
 
 Week 5 builds on top of Week 2-4:
@@ -438,30 +361,6 @@ Run:
 cd skill
 npm.cmd test
 npm.cmd run check
-```
-
-### Updated Project Structure
-
-```text
-skill/
-  src/
-    conversation.ts
-    db.ts
-    index.ts
-    marketStats.ts
-    mlsQueries.ts
-    parser.ts
-    semanticSearch.ts
-    session.ts
-  tests/
-    conversation.test.mjs
-    marketStats.test.mjs
-    mlsQueries.test.mjs
-    parser.test.mjs
-    semanticSearch.test.mjs
-  package.json
-  package-lock.json
-  tsconfig.json
 ```
 
 ## Week 7 - Recommendation Engine
@@ -735,12 +634,6 @@ Run from `skill/`:
 npm.cmd test
 npm.cmd run check
 ```
-Run from `skill/`:
-
-```powershell
-npm.cmd test
-npm.cmd run check
-```
 
 ## Week 12 - Capstone Demo and Final Project Delivery
 
@@ -775,6 +668,23 @@ Week 12 focused on packaging the IDX Multi-Agent Real Estate Assistant into a de
 - Five-minute live demo script
 - Backup demo recording plan
 - Final written reflection
+
+### Final Project Structure
+
+```text
+docs/
+  plan/
+  reference/
+openclaw-skills/
+  idx-email-bridge/
+skill/
+  scripts/
+  src/
+  tests/
+.env.example
+.gitignore
+README.md
+```
 
 ### Verification
 
