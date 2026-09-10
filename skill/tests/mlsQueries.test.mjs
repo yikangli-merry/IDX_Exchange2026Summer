@@ -90,10 +90,10 @@ test("builds sold comps query with city, months, residential constraint, and pag
 
 test("normalizes pagination defensively", () => {
   assert.deepEqual(normalizePagination(0, 250), {
-    limit: 100,
+    limit: 50,
     offset: 0,
     page: 1,
-    queryLimit: 101
+    queryLimit: 51
   });
 });
 

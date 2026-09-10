@@ -73,7 +73,7 @@ export interface SoldComp {
 
 type RawRow = Record<string, unknown>;
 
-const MAX_LIMIT = 100;
+const MAX_LIMIT = 50;
 
 function normalizePositiveInteger(
   value: number | undefined,
