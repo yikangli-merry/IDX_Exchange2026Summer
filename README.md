@@ -1,4 +1,4 @@
-# IDX Exchange 2026 Summer Internship - Weekly Progress
+# 2026 Summer - AI Agentic Engineer Internship
 
 This repository records my first-week progress as an AI Agentic Engineer Intern at IDX Exchange.
 
